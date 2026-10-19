@@ -4,3 +4,5 @@ Markdown
 django-filter
 psycopg2-binary  # Use if connecting to PostgreSQL
 gunicorn       # Use for production WSGI deployment
+django-stubs 
+djangorestframework-stubs
