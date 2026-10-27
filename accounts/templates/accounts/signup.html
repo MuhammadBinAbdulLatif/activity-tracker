@@ -1,0 +1,92 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}Create Account — uTrack{% endblock %}
+
+{% block auth_content %}
+<div class="space-y-6">
+    <div class="space-y-2">
+        <h1 class="text-2xl font-bold tracking-tight text-white">Create Account</h1>
+        <p class="text-sm text-zinc-400">Start tracking your movies, books, and activities</p>
+    </div>
+
+    {% if form.non_field_errors %}
+    <div class="p-3 text-xs rounded-lg border bg-red-950/40 border-red-800/60 text-red-300">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'signup' %}" class="space-y-4" id="signup-form">
+        {% csrf_token %}
+
+        <div class="space-y-1.5">
+            <label for="id_username" class="block text-xs font-medium text-zinc-300">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <p class="text-xs text-red-400">{{ form.username.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="id_password" class="block text-xs font-medium text-zinc-300">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+            <p class="text-xs text-red-400">{{ form.password.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="id_password_confirm" class="block text-xs font-medium text-zinc-300">Confirm Password</label>
+            {{ form.password_confirm }}
+            {% if form.password_confirm.errors %}
+            <p class="text-xs text-red-400">{{ form.password_confirm.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="pt-2 border-t border-zinc-900/90 space-y-3">
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <label for="id_security_question" class="block text-xs font-medium text-zinc-300">Security Question</label>
+                    <span class="text-[10px] text-zinc-500">For account recovery</span>
+                </div>
+                {{ form.security_question }}
+                {% if form.security_question.errors %}
+                <p class="text-xs text-red-400">{{ form.security_question.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="id_security_answer" class="block text-xs font-medium text-zinc-300">Security Answer</label>
+                {{ form.security_answer }}
+                {% if form.security_answer.errors %}
+                <p class="text-xs text-red-400">{{ form.security_answer.errors.0 }}</p>
+                {% endif %}
+                <p class="text-[11px] text-zinc-500">Case-insensitive. Remember this to reset your password if lost.</p>
+            </div>
+        </div>
+
+        <button type="submit" id="signup-btn" class="w-full mt-2 py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-sm rounded-lg shadow-sm transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 focus:ring-offset-zinc-950 flex items-center justify-center gap-2 group">
+            <svg class="loading-spinner hidden w-4 h-4 text-zinc-950 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="btn-text">Create Account</span>
+        </button>
+    </form>
+
+    <div class="text-center text-xs text-zinc-400 pt-2 border-t border-zinc-900">
+        Already have an account? 
+        <a href="{% url 'login' %}" class="font-medium text-white hover:underline underline-offset-4">
+            Sign In
+        </a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('signup-form').addEventListener('submit', function() {
+        const btn = document.getElementById('signup-btn');
+        btn.querySelector('.loading-spinner').classList.remove('hidden');
+        btn.querySelector('.btn-text').textContent = 'Creating account...';
+        btn.classList.add('opacity-80', 'cursor-not-allowed');
+    });
+</script>
+{% endblock %}

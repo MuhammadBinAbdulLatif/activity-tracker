@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" rx="22" fill="#09090b" stroke="#27272a" stroke-width="2"/>
+  <!-- Continuous Horizon / Track Loop -->
+  <path d="M 28 32 C 28 64 36 72 50 72 C 64 72 72 64 72 32" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  <!-- Orbit dot & track crosshair -->
+  <line x1="50" y1="24" x2="50" y2="34" stroke="#71717a" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="50" cy="52" r="4.5" fill="#e4e4e7"/>
+</svg>

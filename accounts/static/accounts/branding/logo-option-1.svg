@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="orbitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#71717a"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded pill -->
+  <rect width="100" height="100" rx="22" fill="#09090b" stroke="#27272a" stroke-width="2"/>
+  <!-- Minimalist Geometric Monogram "u" -->
+  <path d="M 32 28 V 56 C 32 68 40 74 50 74 C 60 74 68 68 68 56 V 28" fill="none" stroke="url(#orbitGrad)" stroke-width="7" stroke-linecap="round"/>
+  <!-- Activity node / Pulse accent -->
+  <circle cx="68" cy="28" r="4.5" fill="#10b981"/>
+</svg>
