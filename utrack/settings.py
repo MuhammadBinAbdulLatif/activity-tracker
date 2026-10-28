@@ -145,17 +145,27 @@ if AWS_STORAGE_BUCKET_NAME:
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', '').strip()
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '').strip()
     AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1').strip()
-    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', '').strip() or f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', '').strip() or None
+    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', '').strip() or None
     AWS_DEFAULT_ACL = None
     AWS_S3_FILE_OVERWRITE = False
+
+    s3_options = {
+        'bucket_name': AWS_STORAGE_BUCKET_NAME,
+        'region_name': AWS_S3_REGION_NAME,
+        'addressing_style': 'path',
+    }
+    if AWS_S3_ENDPOINT_URL:
+        s3_options['endpoint_url'] = AWS_S3_ENDPOINT_URL
+    if AWS_S3_CUSTOM_DOMAIN:
+        s3_options['custom_domain'] = AWS_S3_CUSTOM_DOMAIN
+        if AWS_S3_ENDPOINT_URL and AWS_S3_ENDPOINT_URL.startswith('http://'):
+            s3_options['url_protocol'] = 'http:'
 
     STORAGES = {
         'default': {
             'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
-            'OPTIONS': {
-                'bucket_name': AWS_STORAGE_BUCKET_NAME,
-                'region_name': AWS_S3_REGION_NAME,
-            },
+            'OPTIONS': s3_options,
         },
         'staticfiles': {
             'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
