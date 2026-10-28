@@ -32,6 +32,7 @@ class MovieEntry(models.Model):
     review = models.TextField(blank=True)
     rewatch_count = models.PositiveIntegerField(default=0)
     is_custom = models.BooleanField(default=False)
+    custom_poster = models.ImageField(upload_to="posters/movies/%Y/%m/", blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -46,6 +47,11 @@ class MovieEntry(models.Model):
 
     @property
     def poster_url(self):
+        if self.custom_poster:
+            try:
+                return self.custom_poster.url
+            except Exception:
+                pass
         if self.poster_path:
             if self.poster_path.startswith("http"):
                 return self.poster_path

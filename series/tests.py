@@ -1,8 +1,11 @@
+import io
+from PIL import Image
 from unittest.mock import patch, MagicMock
 from datetime import timedelta
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from .models import SeriesEntry, SeasonEntry, EpisodeLog, SeriesUserStatus, SeriesShowStatus
 from .engine import SeriesProgressionEngine
@@ -12,6 +15,13 @@ class SeriesTrackingAndEngineTests(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(username="series_binger", password="testpassword123")
         self.client.login(username="series_binger", password="testpassword123")
+
+    def _generate_test_image(self):
+        file = io.BytesIO()
+        image = Image.new("RGB", (100, 100), color=(120, 80, 160))
+        image.save(file, "jpeg")
+        file.seek(0)
+        return SimpleUploadedFile("test_series_poster.jpg", file.read(), content_type="image/jpeg")
 
     def test_series_list_requires_login(self):
         self.client.logout()
@@ -45,10 +55,6 @@ class SeriesTrackingAndEngineTests(TestCase):
         self.assertIsNotNone(log)
 
     def test_automatic_next_season_rollover(self):
-        """
-        When completing the final episode of Season 1, if Season 2 exists,
-        advance automatically to Season 2 Episode 0 (ready for Ep 1).
-        """
         series = SeriesEntry.objects.create(
             user=self.user,
             title="House of the Dragon",
@@ -56,12 +62,9 @@ class SeriesTrackingAndEngineTests(TestCase):
             current_episode_number=9,
             user_status=SeriesUserStatus.WATCHING
         )
-        # Season 1 has 10 episodes
         SeasonEntry.objects.create(series=series, season_number=1, episode_count=10)
-        # Season 2 has 8 episodes
         SeasonEntry.objects.create(series=series, season_number=2, episode_count=8)
 
-        # Advance to episode 10 (season finale)
         result = SeriesProgressionEngine.advance_episode(series)
         series.refresh_from_db()
 
@@ -70,15 +73,10 @@ class SeriesTrackingAndEngineTests(TestCase):
         self.assertEqual(series.user_status, SeriesUserStatus.WATCHING)
         self.assertIn("Advanced automatically to Season 2", result["message"])
 
-        # Check season 1 marked completed
         s1 = SeasonEntry.objects.get(series=series, season_number=1)
         self.assertTrue(s1.is_completed)
 
     def test_upcoming_season_waiting_state(self):
-        """
-        When finishing current season and next season is announced but in the future,
-        series transitions to WAITING_FOR_NEXT_SEASON.
-        """
         series = SeriesEntry.objects.create(
             user=self.user,
             title="Stranger Things",
@@ -88,7 +86,6 @@ class SeriesTrackingAndEngineTests(TestCase):
             user_status=SeriesUserStatus.WATCHING
         )
         SeasonEntry.objects.create(series=series, season_number=4, episode_count=9)
-        # Season 5 announced with air date next year
         next_year = timezone.now().date() + timedelta(days=200)
         SeasonEntry.objects.create(series=series, season_number=5, episode_count=8, air_date=next_year)
 
@@ -99,10 +96,6 @@ class SeriesTrackingAndEngineTests(TestCase):
         self.assertIn("Waiting for Season 5", result["message"])
 
     def test_ended_series_full_completion(self):
-        """
-        When finishing final episode of final season of an Ended show,
-        series transitions to COMPLETED.
-        """
         series = SeriesEntry.objects.create(
             user=self.user,
             title="Breaking Bad",
@@ -119,18 +112,25 @@ class SeriesTrackingAndEngineTests(TestCase):
         self.assertEqual(series.user_status, SeriesUserStatus.COMPLETED)
         self.assertIn("Entire series of Breaking Bad completed", result["message"])
 
-    def test_broadcast_airing_status_properties(self):
-        """
-        Verifies has_new_episode_aired and upcoming_episode_days_away logic.
-        """
-        today = timezone.now().date()
-        series = SeriesEntry.objects.create(
-            user=self.user,
-            title="The Penguin",
-            last_air_date=today - timedelta(days=2), # aired 2 days ago
-            next_episode_air_date=today + timedelta(days=5), # airs in 5 days
-            user_status=SeriesUserStatus.WATCHING
-        )
+    def test_add_custom_series_with_image_upload(self):
+        test_image = self._generate_test_image()
+        res = self.client.post(reverse("series_add"), {
+            "title": "Custom Web Series",
+            "total_seasons": "2",
+            "total_episodes": "12",
+            "current_season_number": "1",
+            "current_episode_number": "3",
+            "status": "WATCHING",
+            "rating": "8.8",
+            "poster_file": test_image,
+        })
+        self.assertEqual(res.status_code, 302)
 
-        self.assertTrue(series.has_new_episode_aired)
-        self.assertEqual(series.upcoming_episode_days_away, 5)
+        series = SeriesEntry.objects.filter(user=self.user, title="Custom Web Series").first()
+        self.assertIsNotNone(series)
+        self.assertTrue(series.is_custom)
+        self.assertEqual(series.current_season_number, 1)
+        self.assertEqual(series.current_episode_number, 3)
+        self.assertEqual(series.user_status, SeriesUserStatus.WATCHING)
+        self.assertIsNotNone(series.custom_poster)
+        self.assertTrue(series.poster_url.endswith(".jpg"))

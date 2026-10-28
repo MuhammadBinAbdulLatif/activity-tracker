@@ -3,16 +3,17 @@
 {% block title %}Movies{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
-    <!-- Top Header & Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="space-y-10">
+    <!-- Top Header & Primary Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div>
-            <h1 class="text-2xl font-bold tracking-tight text-white">Movies</h1>
-            <p class="text-xs text-zinc-400 mt-0.5">Track your watched cinema, active viewing, and plan-to-watch queue.</p>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white">Movies</h1>
+            <p class="text-sm text-zinc-400 mt-1">Track your watched cinema, active viewing sessions, and watchlist queue.</p>
         </div>
         <div class="flex items-center gap-3">
-            <button onclick="document.getElementById('add-movie-modal').classList.remove('hidden')" class="flex items-center gap-2 px-3.5 py-2 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs rounded-lg transition-all shadow-sm">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <button onclick="document.getElementById('add-movie-modal').classList.remove('hidden')"
+                    class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
                 <span>Add Movie</span>
@@ -22,36 +23,54 @@
 
     <!-- Currently Watching Section -->
     {% if watching %}
-    <section class="space-y-4">
-        <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <h2 class="text-base font-semibold text-zinc-100 tracking-tight">Currently Watching</h2>
-            <span class="text-xs text-zinc-500">({{ watching|length }})</span>
+    <section class="space-y-5">
+        <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
+            <h2 class="text-lg font-bold text-white tracking-tight">Currently Watching</h2>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-400">
+                {{ watching|length }} Active
+            </span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for movie in watching %}
-            <div class="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80 flex flex-col justify-between space-y-3">
-                <div class="flex gap-3.5">
-                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-14 h-20 rounded-lg object-cover border border-zinc-800/80 shrink-0">
-                    <div class="flex flex-col min-w-0">
-                        <h3 class="text-sm font-semibold text-white truncate">{{ movie.title }}</h3>
-                        <p class="text-xs text-zinc-400 truncate mt-0.5">{{ movie.director|default:"Feature Film" }} &bull; {{ movie.release_date|date:"Y" }}</p>
-                        <span class="text-[11px] text-zinc-500 mt-2 font-mono">{{ movie.runtime }} mins</span>
+            <div class="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 shadow-xl transition-all flex flex-col justify-between space-y-5 group">
+                <div class="flex gap-4">
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-24 h-36 rounded-xl object-cover border border-zinc-800 shadow-md shrink-0 group-hover:scale-105 transition-transform">
+                    <div class="flex flex-col justify-center min-w-0">
+                        <span class="text-[11px] font-semibold text-amber-400 uppercase tracking-wider">Feature Film</span>
+                        <h3 class="text-base sm:text-lg font-bold text-white truncate group-hover:text-amber-400 transition-colors mt-0.5">{{ movie.title }}</h3>
+                        <p class="text-xs text-zinc-400 truncate mt-1">{{ movie.director|default:"Director Unlisted" }} &bull; {{ movie.release_date|date:"Y"|default:"TBA" }}</p>
+                        <div class="mt-3 flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-300">
+                                ⏱ {{ movie.runtime }} mins
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <div class="pt-2 flex items-center justify-between border-t border-zinc-900">
-                    <form action="{% url 'movie_update_status' movie.id %}" method="post">
+
+                <!-- Big Interactive Action Buttons -->
+                <div class="pt-4 flex items-center gap-3 border-t border-zinc-900">
+                    <form action="{% url 'movie_update_status' movie.id %}" method="post" class="flex-1">
                         {% csrf_token %}
                         <input type="hidden" name="status" value="COMPLETED">
-                        <button type="submit" class="text-xs text-emerald-400 hover:text-emerald-300 font-medium">
-                            ✓ Mark Watched
+                        <button type="submit"
+                                class="w-full py-2.5 px-3 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Mark as Watched</span>
                         </button>
                     </form>
                     <form action="{% url 'movie_update_status' movie.id %}" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="status" value="PLAN_TO_WATCH">
-                        <button type="submit" class="text-xs text-zinc-500 hover:text-zinc-300">
-                            Move to Watchlist
+                        <button type="submit"
+                                title="Move to Watchlist"
+                                class="p-2.5 bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-300 hover:text-white rounded-xl border border-zinc-800 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                         </button>
                     </form>
                 </div>
@@ -61,40 +80,61 @@
     </section>
     {% endif %}
 
-    <!-- Watchlist (Plan to Watch) -->
-    <section class="space-y-4">
-        <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h2 class="text-base font-semibold text-zinc-100 tracking-tight">Watchlist / Queue</h2>
-            <span class="text-xs text-zinc-500">({{ watchlist|length }})</span>
+    <!-- Watchlist / Up Next Queue -->
+    <section class="space-y-5">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h2 class="text-lg font-bold text-white tracking-tight">Watchlist & Queue</h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-400">
+                    {{ watchlist|length }}
+                </span>
+            </div>
         </div>
 
         {% if watchlist %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {% for movie in watchlist %}
-            <div class="p-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80 flex flex-col justify-between space-y-3 group hover:border-zinc-700/80 transition-colors">
-                <div class="space-y-2">
-                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-full h-44 rounded-lg object-cover border border-zinc-800/80">
+            <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 shadow-xl transition-all flex flex-col justify-between space-y-4 group">
+                <div class="space-y-3">
+                    <div class="relative overflow-hidden rounded-xl border border-zinc-800 shadow-inner">
+                        <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300">
+                        {% if movie.runtime %}
+                        <span class="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/80 backdrop-blur-md text-[11px] font-mono text-zinc-200">
+                            {{ movie.runtime }}m
+                        </span>
+                        {% endif %}
+                    </div>
                     <div>
-                        <h3 class="text-xs font-semibold text-white truncate">{{ movie.title }}</h3>
-                        <p class="text-[11px] text-zinc-400 truncate">{{ movie.genres|default:"Cinema" }} &bull; {{ movie.release_date|date:"Y" }}</p>
+                        <h3 class="text-base font-bold text-white truncate group-hover:text-amber-400 transition-colors">{{ movie.title }}</h3>
+                        <p class="text-xs text-zinc-400 truncate mt-0.5">{{ movie.genres|default:"Cinema" }} &bull; {{ movie.release_date|date:"Y"|default:"TBA" }}</p>
                     </div>
                 </div>
-                <div class="flex items-center justify-between pt-2 border-t border-zinc-900 text-xs">
+
+                <!-- Big Interactive Action Buttons -->
+                <div class="pt-3 border-t border-zinc-900 flex flex-col gap-2">
                     <form action="{% url 'movie_update_status' movie.id %}" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="status" value="WATCHING">
-                        <button type="submit" class="text-zinc-300 hover:text-white font-medium text-[11px]">
-                            ▶ Start Watching
+                        <button type="submit"
+                                class="w-full py-2.5 px-3 bg-zinc-100 hover:bg-white active:scale-95 text-zinc-950 font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <span>Start Watching</span>
                         </button>
                     </form>
                     <form action="{% url 'movie_update_status' movie.id %}" method="post">
                         {% csrf_token %}
                         <input type="hidden" name="status" value="COMPLETED">
-                        <button type="submit" class="text-emerald-400 hover:text-emerald-300 font-medium text-[11px]">
-                            ✓ Watched
+                        <button type="submit"
+                                class="w-full py-2 px-3 bg-zinc-900 hover:bg-emerald-950/60 hover:border-emerald-800/60 active:scale-95 text-zinc-300 hover:text-emerald-300 border border-zinc-800 font-medium text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Mark Watched</span>
                         </button>
                     </form>
                 </div>
@@ -102,48 +142,54 @@
             {% endfor %}
         </div>
         {% else %}
-        <div class="p-8 rounded-xl bg-zinc-950/40 border border-zinc-900 text-center text-xs text-zinc-500">
-            No movies in your watchlist yet. Click "Add Movie" to queue your next watch.
+        <div class="p-10 rounded-2xl bg-zinc-950/40 border border-zinc-900 text-center space-y-2">
+            <p class="text-sm text-zinc-400">Your movie watchlist is empty.</p>
+            <p class="text-xs text-zinc-500">Search TMDB above or add a custom movie to plan your next watch.</p>
         </div>
         {% endif %}
     </section>
 
     <!-- Watched Chronicle -->
-    <section class="space-y-4">
-        <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <section class="space-y-5">
+        <div class="flex items-center gap-2.5">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2 class="text-base font-semibold text-zinc-100 tracking-tight">Watched History & Chronicle</h2>
-            <span class="text-xs text-zinc-500">({{ completed|length }})</span>
+            <h2 class="text-lg font-bold text-white tracking-tight">Watched History & Chronicle</h2>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-400">
+                {{ completed|length }}
+            </span>
         </div>
 
         {% if completed %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for movie in completed %}
-            <div class="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80 flex items-start justify-between gap-4">
-                <div class="flex items-start gap-3 min-w-0">
-                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-12 h-16 rounded-md object-cover border border-zinc-800 shrink-0">
+            <div class="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/90 shadow-xl flex items-start justify-between gap-4">
+                <div class="flex items-start gap-4 min-w-0">
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-16 h-24 rounded-xl object-cover border border-zinc-800 shadow-md shrink-0">
                     <div class="flex flex-col min-w-0">
-                        <h3 class="text-xs font-semibold text-white truncate">{{ movie.title }}</h3>
-                        <div class="flex items-center gap-2 mt-0.5">
+                        <h3 class="text-base font-bold text-white truncate">{{ movie.title }}</h3>
+                        <div class="flex items-center gap-2 mt-1">
                             {% if movie.rating %}
-                            <span class="text-amber-400 text-xs font-mono">★ {{ movie.rating }}/10</span>
+                            <span class="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold font-mono">
+                                ★ {{ movie.rating }}/10
+                            </span>
                             {% endif %}
-                            <span class="text-[11px] text-zinc-500">&bull; {{ movie.watch_date|date:"M d, Y"|default:"Watched" }}</span>
+                            <span class="text-xs text-zinc-500">{{ movie.watch_date|date:"M d, Y"|default:"Watched" }}</span>
                         </div>
                         {% if movie.review %}
-                        <p class="text-[11px] text-zinc-400 italic line-clamp-2 mt-1">&ldquo;{{ movie.review }}&rdquo;</p>
+                        <p class="text-xs text-zinc-300 italic line-clamp-2 mt-2 leading-relaxed">&ldquo;{{ movie.review }}&rdquo;</p>
                         {% endif %}
                         {% if movie.rewatch_count > 0 %}
-                        <span class="text-[10px] text-zinc-500 mt-1">Rewatched {{ movie.rewatch_count }} time{{ movie.rewatch_count|pluralize }}</span>
+                        <span class="text-[11px] text-zinc-500 font-medium mt-2">Rewatched {{ movie.rewatch_count }} time{{ movie.rewatch_count|pluralize }}</span>
                         {% endif %}
                     </div>
                 </div>
                 <form action="{% url 'movie_rewatch' movie.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" title="Log Rewatch" class="p-1 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 rounded">
-                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button type="submit" title="Log Rewatch"
+                            class="p-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-400 hover:text-white border border-zinc-800 transition-all cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </button>
@@ -156,49 +202,102 @@
 </div>
 
 <!-- Modal: Search & Add Movie -->
-<div id="add-movie-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div class="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+<div id="add-movie-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+    <div class="w-full max-w-xl bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <!-- Header -->
-        <div class="p-4 border-b border-zinc-800/80 flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-white">Add Movie to Tracker</h3>
-            <button onclick="document.getElementById('add-movie-modal').classList.add('hidden')" class="text-zinc-500 hover:text-white">&times;</button>
+        <div class="p-5 border-b border-zinc-800/80 flex items-center justify-between">
+            <div>
+                <h3 class="text-base font-bold text-white">Add Movie</h3>
+                <p class="text-xs text-zinc-400">Search TMDB open database or create custom movie.</p>
+            </div>
+            <button onclick="document.getElementById('add-movie-modal').classList.add('hidden')" class="text-zinc-400 hover:text-white text-xl p-1 cursor-pointer">&times;</button>
         </div>
 
         <!-- Search Bar -->
-        <div class="p-4 border-b border-zinc-900">
+        <div class="p-5 border-b border-zinc-900 bg-zinc-900/30">
             <input type="text"
                    name="q"
-                   placeholder="Search movie title (TMDB)..."
+                   placeholder="Type movie title to search TMDB..."
                    hx-get="{% url 'movie_search' %}"
-                   hx-trigger="keyup changed delay:350ms"
+                   hx-trigger="keyup changed delay:300ms"
                    hx-target="#movie-search-results"
-                   class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500">
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all">
         </div>
 
         <!-- Live Search Results Container -->
-        <div id="movie-search-results" class="p-4 overflow-y-auto flex-1 space-y-2">
-            <div class="text-center text-xs text-zinc-500 py-6">
-                Type a title above to search TMDB catalog or use manual entry below.
+        <div id="movie-search-results" class="p-5 overflow-y-auto flex-1 space-y-3">
+            <div class="text-center text-xs text-zinc-500 py-8">
+                Type above to discover movies, or fill out custom details below.
             </div>
         </div>
 
-        <!-- Manual Creation Accordion / Footer -->
-        <div class="p-4 border-t border-zinc-900 bg-zinc-950/40">
-            <details class="text-xs">
-                <summary class="cursor-pointer text-zinc-400 hover:text-white font-medium">Or create manual / unlisted movie entry &darr;</summary>
-                <form action="{% url 'movie_add' %}" method="post" class="mt-3 space-y-2.5">
+        <!-- Comprehensive Custom Creation Form -->
+        <div class="p-5 border-t border-zinc-900 bg-zinc-950/60 overflow-y-auto">
+            <details class="text-xs group">
+                <summary class="cursor-pointer text-sm font-semibold text-emerald-400 hover:text-emerald-300 flex items-center justify-between">
+                    <span>Create Custom / Indie Movie Entry</span>
+                    <span class="text-zinc-500 group-open:rotate-180 transition-transform">&darr;</span>
+                </summary>
+                
+                <form action="{% url 'movie_add' %}" method="post" enctype="multipart/form-data" class="mt-4 space-y-3.5">
                     {% csrf_token %}
-                    <input type="text" name="title" placeholder="Movie Title" required class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="text" name="director" placeholder="Director" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
-                        <input type="number" name="runtime" placeholder="Runtime (min)" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
+                    <div>
+                        <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Title *</label>
+                        <input type="text" name="title" required placeholder="e.g. Inception or Local Indie Film" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none focus:border-zinc-500">
                     </div>
-                    <select name="status" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
-                        <option value="PLAN_TO_WATCH">Plan to Watch</option>
-                        <option value="WATCHING">Currently Watching</option>
-                        <option value="COMPLETED">Completed</option>
-                    </select>
-                    <button type="submit" class="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-medium">Save Custom Movie</button>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Status</label>
+                            <select name="status" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white">
+                                <option value="PLAN_TO_WATCH">Plan to Watch</option>
+                                <option value="WATCHING">Currently Watching</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="DROPPED">Dropped</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Runtime (Mins)</label>
+                            <input type="number" name="runtime" placeholder="e.g. 120" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Director</label>
+                            <input type="text" name="director" placeholder="Director Name" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Release Date</label>
+                            <input type="date" name="release_date" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white">
+                        </div>
+                    </div>
+
+                    <!-- Custom Poster Upload (S3 Supported) -->
+                    <div>
+                        <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Upload Poster Artwork (S3 Storage)</label>
+                        <input type="file" name="poster_file" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Personal Rating (1-10)</label>
+                            <input type="number" step="0.5" min="1" max="10" name="rating" placeholder="8.5" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Watch Date</label>
+                            <input type="date" name="watch_date" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-zinc-400 uppercase tracking-wider mb-1">Review & Personal Notes</label>
+                        <textarea name="review" rows="2" placeholder="Your reflections on the film..." class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer">
+                        Save Movie to Chronicle
+                    </button>
                 </form>
             </details>
         </div>

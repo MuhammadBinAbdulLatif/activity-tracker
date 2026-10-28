@@ -52,6 +52,7 @@ class SeriesEntry(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     review = models.TextField(blank=True)
     is_custom = models.BooleanField(default=False)
+    custom_poster = models.ImageField(upload_to="posters/series/%Y/%m/", blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -66,6 +67,11 @@ class SeriesEntry(models.Model):
 
     @property
     def poster_url(self):
+        if self.custom_poster:
+            try:
+                return self.custom_poster.url
+            except Exception:
+                pass
         if self.poster_path:
             if self.poster_path.startswith("http"):
                 return self.poster_path

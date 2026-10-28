@@ -1,7 +1,10 @@
-from unittest.mock import patch, MagicMock
+import io
+from PIL import Image
+from unittest.mock import patch
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from .models import MovieEntry, MovieStatus
 
@@ -11,17 +14,24 @@ class MovieTrackingTests(TestCase):
         self.user = User.objects.create_user(username="film_fan", password="testpassword123")
         self.client.login(username="film_fan", password="testpassword123")
 
+    def _generate_test_image(self):
+        file = io.BytesIO()
+        image = Image.new("RGB", (100, 100), color=(73, 109, 137))
+        image.save(file, "jpeg")
+        file.seek(0)
+        return SimpleUploadedFile("test_poster.jpg", file.read(), content_type="image/jpeg")
+
     def test_movie_list_requires_login(self):
         self.client.logout()
         res = self.client.get(reverse("movie_list"))
         self.assertEqual(res.status_code, 302)
         self.assertIn("/accounts/login/", res.url)
 
-    def test_movie_list_renders_empty(self):
+    def test_movie_list_renders_empty_with_prominent_buttons(self):
         res = self.client.get(reverse("movie_list"))
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, "Movies")
-        self.assertContains(res, "Watchlist / Queue")
+        self.assertContains(res, "bg-emerald-500")
 
     @patch("services.tmdb.tmdb_service.get_movie_details")
     def test_add_movie_from_tmdb(self, mock_get_details):
@@ -50,18 +60,26 @@ class MovieTrackingTests(TestCase):
         self.assertEqual(movie.runtime, 166)
         self.assertEqual(movie.status, MovieStatus.WATCHING)
 
-    def test_add_custom_movie(self):
+    def test_add_custom_movie_with_image_upload(self):
+        test_image = self._generate_test_image()
         res = self.client.post(reverse("movie_add"), {
-            "title": "My Indie Home Video",
-            "director": "Jane Doe",
-            "runtime": "45",
-            "status": "PLAN_TO_WATCH"
+            "title": "My S3 Custom Movie",
+            "director": "Christopher Nolan",
+            "runtime": "150",
+            "status": "COMPLETED",
+            "rating": "9.5",
+            "review": "A masterpiece of independent cinema.",
+            "poster_file": test_image,
         })
         self.assertEqual(res.status_code, 302)
-        movie = MovieEntry.objects.filter(user=self.user, title="My Indie Home Video").first()
+
+        movie = MovieEntry.objects.filter(user=self.user, title="My S3 Custom Movie").first()
         self.assertIsNotNone(movie)
         self.assertTrue(movie.is_custom)
-        self.assertEqual(movie.runtime, 45)
+        self.assertEqual(movie.runtime, 150)
+        self.assertEqual(movie.status, MovieStatus.COMPLETED)
+        self.assertIsNotNone(movie.custom_poster)
+        self.assertTrue(movie.poster_url.endswith(".jpg"))
 
     def test_update_movie_status(self):
         movie = MovieEntry.objects.create(

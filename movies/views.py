@@ -112,6 +112,17 @@ def add_movie_view(request):
         # Manual Fallback Entry
         title = request.POST.get("title", "").strip()
         if title:
+            custom_poster = request.FILES.get("poster_file")
+            watch_date_input = request.POST.get("watch_date")
+            watch_date = None
+            if watch_date_input:
+                try:
+                    watch_date = timezone.datetime.strptime(watch_date_input, "%Y-%m-%d").date()
+                except ValueError:
+                    watch_date = None
+            elif status == MovieStatus.COMPLETED:
+                watch_date = timezone.now().date()
+
             entry = MovieEntry.objects.create(
                 user=request.user,
                 title=title,
@@ -124,7 +135,8 @@ def add_movie_view(request):
                 rating=float(rating) if rating else None,
                 review=review,
                 is_custom=True,
-                watch_date=timezone.now().date() if status == MovieStatus.COMPLETED else None,
+                watch_date=watch_date,
+                custom_poster=custom_poster,
             )
             messages.success(request, f"Created custom movie entry '{entry.title}'.")
             return redirect("movie_list")

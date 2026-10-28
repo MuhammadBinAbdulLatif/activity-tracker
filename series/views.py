@@ -110,23 +110,42 @@ def add_series_view(request):
         # Manual Fallback
         title = request.POST.get("title", "").strip()
         if title:
+            custom_poster = request.FILES.get("poster_file")
+            total_seasons = int(request.POST.get("total_seasons") or 1)
+            total_episodes = int(request.POST.get("total_episodes") or 10)
+            current_season = int(request.POST.get("current_season_number") or 1)
+            current_episode = int(request.POST.get("current_episode_number") or 0)
+            rating = request.POST.get("rating") or None
+            review = request.POST.get("review", "").strip()
+
             entry = SeriesEntry.objects.create(
                 user=request.user,
                 title=title,
                 first_air_date=request.POST.get("first_air_date") or None,
                 overview=request.POST.get("overview", "").strip(),
                 genres=request.POST.get("genres", "").strip(),
-                total_seasons=int(request.POST.get("total_seasons") or 1),
-                total_episodes=int(request.POST.get("total_episodes") or 10),
+                total_seasons=total_seasons,
+                total_episodes=total_episodes,
+                current_season_number=current_season,
+                current_episode_number=current_episode,
                 user_status=status,
+                rating=float(rating) if rating else None,
+                review=review,
                 is_custom=True,
+                custom_poster=custom_poster,
             )
-            SeasonEntry.objects.create(
-                series=entry,
-                season_number=1,
-                episode_count=int(request.POST.get("total_episodes") or 10),
-                name="Season 1"
-            )
+            # Create season entries up to total_seasons
+            for s_num in range(1, total_seasons + 1):
+                ep_count = total_episodes // total_seasons if total_seasons > 0 else 10
+                is_comp = (status == SeriesUserStatus.COMPLETED) or (s_num < current_season)
+                SeasonEntry.objects.create(
+                    series=entry,
+                    season_number=s_num,
+                    episode_count=ep_count,
+                    name=f"Season {s_num}",
+                    is_completed=is_comp,
+                    completed_at=timezone.now() if is_comp else None
+                )
             messages.success(request, f"Created custom series '{entry.title}'.")
             return redirect("series_list")
 
