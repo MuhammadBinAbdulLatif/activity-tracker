@@ -20,13 +20,15 @@ class TMDBService:
             "Accept": "application/json",
             "Content-Type": "application/json;charset=utf-8",
         }
-        if self.access_token:
+        # If no v3 api_key was provided and a bearer token is present, use Bearer auth
+        if self.access_token and not self.api_key:
             headers["Authorization"] = f"Bearer {self.access_token}"
         return headers
 
     def _build_params(self, extra_params=None):
         params = {}
-        if self.api_key and not self.access_token:
+        # Prioritize v3 api_key whenever present
+        if self.api_key:
             params["api_key"] = self.api_key
         if extra_params:
             params.update(extra_params)
