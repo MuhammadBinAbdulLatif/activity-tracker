@@ -1,0 +1,200 @@
+{% extends "base_app.html" %}
+
+{% block title %}Series & TV Shows{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">Series & TV Shows</h1>
+            <p class="text-xs text-zinc-400 mt-0.5">Track episodic television, auto-advancing seasons, and live broadcast air alerts.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="document.getElementById('add-series-modal').classList.remove('hidden')" class="flex items-center gap-2 px-3.5 py-2 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-xs rounded-lg transition-all shadow-sm">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Track Series</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Currently Watching Hub -->
+    {% if watching %}
+    <section class="space-y-4">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+            <h2 class="text-base font-semibold text-zinc-100 tracking-tight">Currently Binging & Watching</h2>
+            <span class="text-xs text-zinc-500">({{ watching|length }})</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for s in watching %}
+            <div id="series-card-{{ s.id }}" class="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700/80 transition-all flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                    <!-- Airing Alert Badges -->
+                    <div class="flex items-center justify-between gap-2">
+                        {% if s.has_new_episode_aired %}
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/80 border border-emerald-800 text-emerald-300">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                            New Episode Aired!
+                        </span>
+                        {% elif s.upcoming_episode_days_away is not None %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400">
+                            Next Ep in {{ s.upcoming_episode_days_away }} day{{ s.upcoming_episode_days_away|pluralize }}
+                        </span>
+                        {% else %}
+                        <span class="text-[10px] text-zinc-500 font-mono">{{ s.show_status }}</span>
+                        {% endif %}
+
+                        <form action="{% url 'series_sync' s.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" title="Sync latest schedule from TMDB" class="text-zinc-500 hover:text-zinc-300 text-xs">
+                                &#x21bb;
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Show Info -->
+                    <div class="flex gap-3.5">
+                        <img src="{{ s.poster_url }}" alt="{{ s.title }}" class="w-16 h-24 rounded-lg object-cover border border-zinc-800/80 shrink-0">
+                        <div class="flex flex-col min-w-0 justify-center">
+                            <h3 class="text-sm font-semibold text-white truncate">{{ s.title }}</h3>
+                            <p class="text-xs text-indigo-400 font-medium mt-0.5">Season {{ s.current_season_number }}</p>
+                            <span class="text-xs text-zinc-300 font-mono mt-1">Episode {{ s.current_episode_number }}</span>
+                            {% if s.next_episode_name %}
+                            <span class="text-[10px] text-zinc-500 truncate mt-1">Up next: &ldquo;{{ s.next_episode_name }}&rdquo;</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Controls: Stepper -->
+                <div class="pt-3 border-t border-zinc-900 flex items-center justify-between">
+                    <span class="text-[11px] text-zinc-500">Total: {{ s.total_seasons }} Season{{ s.total_seasons|pluralize }}</span>
+                    <form action="{% url 'series_advance_episode' s.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white font-medium text-xs transition-colors">
+                            <span>+1 Episode</span>
+                            <span class="text-emerald-400">&rarr;</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Waiting for Next Season -->
+    {% if waiting %}
+    <section class="space-y-4">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <h2 class="text-base font-semibold text-zinc-100 tracking-tight">Caught Up &bull; Waiting for Next Season</h2>
+            <span class="text-xs text-zinc-500">({{ waiting|length }})</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for s in waiting %}
+            <div class="p-4 rounded-xl bg-zinc-950/80 border border-zinc-800/80 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <img src="{{ s.poster_url }}" alt="{{ s.title }}" class="w-12 h-16 rounded-md object-cover border border-zinc-800 shrink-0">
+                    <div class="flex flex-col min-w-0">
+                        <h3 class="text-xs font-semibold text-white truncate">{{ s.title }}</h3>
+                        <span class="text-[11px] text-emerald-400 font-medium">Completed Season {{ s.current_season_number }}</span>
+                        {% if s.next_episode_air_date %}
+                        <span class="text-[10px] text-amber-400 mt-0.5">Season {{ s.current_season_number|add:1 }} airs {{ s.next_episode_air_date|date:"M d, Y" }}</span>
+                        {% else %}
+                        <span class="text-[10px] text-zinc-500 mt-0.5">Status: {{ s.show_status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Watchlist (Plan to Watch) -->
+    <section class="space-y-4">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="text-base font-semibold text-zinc-100 tracking-tight">Series Watchlist</h2>
+            <span class="text-xs text-zinc-500">({{ watchlist|length }})</span>
+        </div>
+
+        {% if watchlist %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for s in watchlist %}
+            <div class="p-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80 flex flex-col justify-between space-y-3">
+                <img src="{{ s.poster_url }}" alt="{{ s.title }}" class="w-full h-44 rounded-lg object-cover border border-zinc-800">
+                <div>
+                    <h3 class="text-xs font-semibold text-white truncate">{{ s.title }}</h3>
+                    <p class="text-[11px] text-zinc-400 truncate">{{ s.genres|default:"Television" }} &bull; {{ s.total_seasons }} Season{{ s.total_seasons|pluralize }}</p>
+                </div>
+                <form action="{% url 'series_advance_episode' s.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white rounded-lg text-xs font-medium">
+                        ▶ Start Watching
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-6 rounded-xl bg-zinc-950/40 border border-zinc-900 text-center text-xs text-zinc-500">
+            No series currently queued. Search TMDB above to track new shows.
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<!-- Modal: Search & Add Series -->
+<div id="add-series-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div class="p-4 border-b border-zinc-800/80 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-white">Track TV Series</h3>
+            <button onclick="document.getElementById('add-series-modal').classList.add('hidden')" class="text-zinc-500 hover:text-white">&times;</button>
+        </div>
+
+        <div class="p-4 border-b border-zinc-900">
+            <input type="text"
+                   name="q"
+                   placeholder="Search TV series title (TMDB)..."
+                   hx-get="{% url 'series_search' %}"
+                   hx-trigger="keyup changed delay:350ms"
+                   hx-target="#series-search-results"
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500">
+        </div>
+
+        <div id="series-search-results" class="p-4 overflow-y-auto flex-1 space-y-2">
+            <div class="text-center text-xs text-zinc-500 py-6">
+                Type a title above to search TV database.
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-zinc-900 bg-zinc-950/40">
+            <details class="text-xs">
+                <summary class="cursor-pointer text-zinc-400 hover:text-white font-medium">Or create manual / custom show entry &darr;</summary>
+                <form action="{% url 'series_add' %}" method="post" class="mt-3 space-y-2.5">
+                    {% csrf_token %}
+                    <input type="text" name="title" placeholder="Series Title" required class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" name="total_seasons" placeholder="Total Seasons" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
+                        <input type="number" name="total_episodes" placeholder="Total Episodes" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
+                    </div>
+                    <select name="status" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white">
+                        <option value="WATCHING">Start Watching</option>
+                        <option value="PLAN_TO_WATCH">Plan to Watch</option>
+                    </select>
+                    <button type="submit" class="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-medium">Save Custom Series</button>
+                </form>
+            </details>
+        </div>
+    </div>
+</div>
+{% endblock %}

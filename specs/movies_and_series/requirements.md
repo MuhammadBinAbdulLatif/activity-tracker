@@ -1,7 +1,7 @@
 # Requirements: Movies & Series Tracking Engine
 
 > **Feature Directory:** `specs/movies_and_series/requirements.md`  
-> **Status:** Draft / Active Specification  
+> **Status:** Completed & Closed  
 
 ---
 
@@ -128,11 +128,11 @@ While both share TMDB (The Movie Database) as their primary open catalog provide
 ---
 
 ## 3. Definition of Done (Acceptance Criteria)
-- [ ] Dedicated feature directory `specs/movies_and_series/` has `requirements.md`, `plan.md`, and `validation.md`.
-- [ ] TMDB client service implemented with Redis caching for movie and TV endpoints.
-- [ ] Separate models created for Movies and Series/Seasons/Episodes.
-- [ ] Next-season auto-roll-over algorithm passes unit and integration tests.
-- [ ] Episode release status detection (`New Episode Available`, `Upcoming Season`) verified.
-- [ ] Views and templates for `/movies/` and `/series/` styled in compliance with `specs/styles.md`.
-- [ ] 100% of automated tests pass with zero regressions.
-- [ ] Specs marked Completed & code committed and pushed to git.
+- [x] Dedicated feature directory `specs/movies_and_series/` has `requirements.md`, `plan.md`, and `validation.md`.
+- [x] TMDB client service implemented with Redis caching for movie and TV endpoints.
+- [x] Separate models created for Movies and Series/Seasons/Episodes.
+- [x] Next-season auto-roll-over algorithm passes unit and integration tests.
+- [x] Episode release status detection (`New Episode Available`, `Upcoming Season`) verified.
+- [x] Views and templates for `/movies/` and `/series/` styled in compliance with `specs/styles.md`.
+- [x] 100% of automated tests pass with zero regressions.
+- [x] Specs marked Completed & code committed and pushed to git.
