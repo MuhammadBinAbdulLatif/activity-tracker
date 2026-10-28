@@ -25,6 +25,8 @@ Until dynamic provider integrations and user logging flows are fully wired in fu
      - **Books**
      - **Audiobooks**
      - **Comics & Manga**
+     - **Video Games**
+     - **Board Games**
      - **Fitness & Habits** (Life Activities)
    - Visual separator / breaker (`border-t border-zinc-800/80` with subtle spacing).
    - Bottom Profile & Settings Section:
@@ -73,7 +75,7 @@ Rich cards for items currently in consumption across multiple categories:
 ## 4. Definition of Done (Acceptance Criteria)
 - [x] Dedicated feature directory `specs/homepage/` contains `plan.md`, `requirements.md`, and `validation.md`.
 - [x] Navigating to `/` as an authenticated user renders the full sidebar, heatmap, in-progress items, recently completed items, and plan-to-watch queue.
-- [x] Left sidebar contains all requested links (Books, Audiobooks, Movies, Series, Comics, Exercises), the breaker line, and the user settings/profile block.
+- [x] Left sidebar contains all requested links (Books, Audiobooks, Movies, Series, Comics, Games, Board Games, Exercises), the breaker line, and the user settings/profile block.
 - [x] Heatmap renders a 52-week grid with emerald activity intensity levels.
 - [x] In-progress items display intuitive progress bars and category badges.
 - [x] Unauthenticated users attempting to visit `/` are redirected to `/accounts/login/`.

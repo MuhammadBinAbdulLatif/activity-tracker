@@ -50,6 +50,8 @@
   - **Audiobooks:** Open Library / LibriVox / iTunes Search API / Audnexus
   - **Comics & Graphic Novels:** Comic Vine API / Grand Comics Database (GCD)
   - **Anime & Manga:** AniList GraphQL / Jikan (MyAnimeList open API)
+  - **Video Games:** IGDB API (Twitch Developer OAuth) / RAWG Video Games Database API
+  - **Board Games:** BoardGameGeek (BGG) XML API2
 - **Architecture:**
   - Common `ProviderBase` interface (`search(query)`, `get_details(external_id)`).
   - Multi-tier caching in Redis for search queries and metadata payloads.
@@ -84,6 +86,18 @@ Transition the dashboard from demo data to persisted user logs with dual entry p
 - Search Comic Vine / AniList / Jikan.
 - Auto-fill: issue/volume count, artist, writer, status, covers.
 - User inputs: issues/chapters read, date consumed, rating, notes.
+- Manual creation fallback.
+
+### Step 5.5: Video Games
+- Search IGDB / RAWG by title/platform.
+- Auto-fill: box cover art, release year, developers/publishers, platforms (PC, PS5, Xbox, Switch), genres.
+- User inputs: play status (Playing, Completed, Dropped, Backlog), hours played, completion percentage, personal rating, review, platform played on.
+- Manual creation fallback.
+
+### Step 5.6: Board Games & Tabletop
+- Search BoardGameGeek (BGG) XML API2 by title.
+- Auto-fill: box artwork, recommended player counts, playing time, designers, mechanics, BGG ranking.
+- User inputs: play date, play count, session duration, players present / winner, user rating, thoughts.
 - Manual creation fallback.
 
 ---

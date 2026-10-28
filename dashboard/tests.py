@@ -38,6 +38,8 @@ class DashboardViewTests(TestCase):
         self.assertContains(response, "Books")
         self.assertContains(response, "Audiobooks")
         self.assertContains(response, "Comics & Manga", html=False)
+        self.assertContains(response, "Games")
+        self.assertContains(response, "Board Games")
         self.assertContains(response, "Exercises & Habits", html=False)
 
     def test_sidebar_profile_and_breaker(self):
@@ -70,4 +72,6 @@ class DashboardViewTests(TestCase):
         self.assertContains(response, "Project Hail Mary")
         self.assertContains(response, "Atomic Habits")
         self.assertContains(response, "Berserk")
+        self.assertContains(response, "Elden Ring")
+        self.assertContains(response, "Brass: Birmingham")
         self.assertContains(response, "5K Strength")

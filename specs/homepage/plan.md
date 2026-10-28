@@ -22,7 +22,7 @@ We delivered the home dashboard in a dedicated app `dashboard`:
    - Structured cleanly matching future ORM model schemas to make eventual transition zero-refactor.
 3. **Template Architecture:**
    - `templates/base_app.html`: Master layout containing standard `<head>`, font imports, Tailwind configuration, toast container, and responsive sidebar shell.
-   - `templates/dashboard/sidebar.html`: Left navigation bar with branding, media/habit links (Movies, Series, Books, Audiobooks, Comics, Exercises), divider breaker, and bottom profile/settings card.
+   - `templates/dashboard/sidebar.html`: Left navigation bar with branding, media/habit links (Movies, Series, Books, Audiobooks, Comics, Games, Board Games, Exercises), divider breaker, and bottom profile/settings card.
    - `templates/dashboard/home.html`: Main content area orchestrating:
      - Header bar with search input placeholder & user greeting.
      - Heatmap contribution component with month labels and day grid.
@@ -51,7 +51,7 @@ We delivered the home dashboard in a dedicated app `dashboard`:
 ### Step 4: Author Templates & Visual Styling [COMPLETED]
 - Created `templates/base_app.html` mirroring `specs/styles.md` standards.
 - Built sleek sidebar adhering to requirements:
-  - Links: Books, Audiobooks, Movies, Series, Comics, Exercises.
+  - Links: Books, Audiobooks, Movies, Series, Comics, Games, Board Games, Exercises.
   - Visual breaker line.
   - Profile card with avatar, username, settings link, and sign out form.
 - Assembled `templates/dashboard/home.html` with responsive grid layouts, stat cards, heatmap calendar grid, and media cards.

@@ -28,7 +28,7 @@ This constitution governs the design, engineering priorities, user experience, a
 
 ### 2.2 The Solution Commitment
 1. **Low Friction Logging:** Tracking must not feel like homework.
-2. **Comprehensive Scope:** Unify movies, series, books, audiobooks, comics, anime, physical habits, and activities in one consolidated dashboard.
+2. **Comprehensive Scope:** Unify movies, series, books, audiobooks, comics, anime, video games, board games, physical habits, and activities in one consolidated dashboard.
 3. **Automated Enrichment via Open APIs:** Leverage public metadata catalogs (e.g., Open Library, TMDB, AniList, etc.) so users never have to type mundane metadata (posters, synopsis, release dates, authors, directors) manually.
 4. **Insightful Retrospectives & Visual Proof of Life:** Provide intuitive monthly/weekly summaries, timeline logs, and a GitHub-style daily activity heatmap that visually validates their consistency and engagement with clarity and pride.
 

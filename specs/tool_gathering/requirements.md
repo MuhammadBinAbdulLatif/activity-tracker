@@ -56,6 +56,18 @@ This specification serves as the authoritative inventory of:
    - **Auth Required:** AniList GraphQL & Jikan are open and free (no API key required).
    - **Variables:** `ANILIST_API_ENDPOINT` (defaults to `https://graphql.anilist.co`).
 
+6. **Video Games:**
+   - **Primary Provider:** IGDB (Internet Game Database via Twitch Developer OAuth) / RAWG Video Games Database API.
+   - **Data Provided:** Cover art, release dates, platforms (PC, PlayStation, Xbox, Switch), developers, genres, storyline, game modes.
+   - **Auth Required:** Free Twitch Developer Client ID & Client Secret (for IGDB) or free RAWG API Key.
+   - **Variables:** `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`, `RAWG_API_KEY`.
+
+7. **Board Games:**
+   - **Primary Provider:** BoardGameGeek (BGG) XML API2 (`https://boardgamegeek.com/xmlapi2/`).
+   - **Data Provided:** Box thumbnail/cover art, player counts (min/max), playing time, age ratings, designers, mechanics, BGG community rank.
+   - **Auth Required:** BGG XML API2 Bearer Token / Free Developer App Registration.
+   - **Variables:** `BGG_API_TOKEN`, `BGG_API_URL` (defaults to `https://boardgamegeek.com/xmlapi2`).
+
 ---
 
 ## 3. Comprehensive `.env` Deliverable Requirements

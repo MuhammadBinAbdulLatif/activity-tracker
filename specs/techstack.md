@@ -66,7 +66,12 @@ REDIS_URL=redis://127.0.0.1:6379/1
 # --- External Provider API Keys ---
 TMDB_API_KEY=
 TMDB_READ_ACCESS_TOKEN=
-# Additional provider keys will be added as integrations are introduced
+GOOGLE_BOOKS_API_KEY=
+COMIC_VINE_API_KEY=
+IGDB_CLIENT_ID=
+IGDB_CLIENT_SECRET=
+RAWG_API_KEY=
+BGG_API_TOKEN=
 ```
 
 ---

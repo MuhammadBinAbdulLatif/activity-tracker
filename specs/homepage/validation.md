@@ -15,7 +15,7 @@ The dashboard feature has been thoroughly verified with automated unit and integ
 | :--- | :--- | :--- |
 | `test_dashboard_requires_login` | Unauthenticated GET request to `/` redirects (`302`) to `/accounts/login/?next=/` | **PASSED** |
 | `test_dashboard_renders_for_logged_in_user` | Authenticated GET request to `/` returns status `200 OK`, uses `dashboard/home.html` and `dashboard/sidebar.html` | **PASSED** |
-| `test_sidebar_contains_all_media_links` | Sidebar contains links for Books, Audiobooks, Movies, Series & TV, Comics & Manga, and Exercises & Habits | **PASSED** |
+| `test_sidebar_contains_all_media_links` | Sidebar contains links for Books, Audiobooks, Movies, Series & TV, Comics & Manga, Games, Board Games, and Exercises & Habits | **PASSED** |
 | `test_sidebar_profile_and_breaker` | Sidebar contains divider breaker, user's username, settings link, and sign out form | **PASSED** |
 | `test_heatmap_and_in_progress_data` | Context contains 52-week heatmap grid, in-progress items, planned items, and recently finished items | **PASSED** |
 
