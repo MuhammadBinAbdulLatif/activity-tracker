@@ -49,6 +49,19 @@ class SeriesProgressionEngine:
         if last_air:
             series_entry.last_air_date = last_air
 
+        # Backdrop & Tagline
+        if not series_entry.backdrop_path and data.get("backdrop_path"):
+            series_entry.backdrop_path = data.get("backdrop_path")
+        if not series_entry.tagline and data.get("tagline"):
+            series_entry.tagline = data.get("tagline", "")
+
+        # Cast extraction
+        credits_data = data.get("credits", {})
+        if credits_data:
+            cast_members = credits_data.get("cast", [])[:10]
+            if cast_members:
+                series_entry.cast = ", ".join([c.get("name", "") for c in cast_members if c.get("name")])
+
         series_entry.save()
 
         # Sync seasons

@@ -105,7 +105,7 @@ def add_series_view(request):
                 SeriesProgressionEngine.sync_tmdb_metadata(entry)
 
                 messages.success(request, f"Tracking '{entry.title}'.")
-                return redirect("series_list")
+                return redirect("series_detail", series_id=entry.id)
 
         # Manual Fallback
         title = request.POST.get("title", "").strip()
@@ -117,6 +117,7 @@ def add_series_view(request):
             current_episode = int(request.POST.get("current_episode_number") or 0)
             rating = request.POST.get("rating") or None
             review = request.POST.get("review", "").strip()
+            cast = request.POST.get("cast", "").strip()
 
             entry = SeriesEntry.objects.create(
                 user=request.user,
@@ -124,6 +125,7 @@ def add_series_view(request):
                 first_air_date=request.POST.get("first_air_date") or None,
                 overview=request.POST.get("overview", "").strip(),
                 genres=request.POST.get("genres", "").strip(),
+                cast=cast,
                 total_seasons=total_seasons,
                 total_episodes=total_episodes,
                 current_season_number=current_season,
@@ -147,7 +149,7 @@ def add_series_view(request):
                     completed_at=timezone.now() if is_comp else None
                 )
             messages.success(request, f"Created custom series '{entry.title}'.")
-            return redirect("series_list")
+            return redirect("series_detail", series_id=entry.id)
 
     return redirect("series_list")
 
@@ -174,4 +176,138 @@ def sync_series_metadata_view(request, series_id):
     entry = get_object_or_404(SeriesEntry, id=series_id, user=request.user)
     SeriesProgressionEngine.sync_tmdb_metadata(entry)
     messages.success(request, f"Synced broadcast schedule for '{entry.title}'.")
-    return redirect("series_list")
+    next_url = request.META.get("HTTP_REFERER")
+    if next_url and ("series" in next_url):
+        return redirect(next_url)
+    return redirect("series_detail", series_id=entry.id)
+
+@login_required
+def series_detail_view(request, series_id):
+    """
+    Renders dedicated, cinematic series detail page with full cast,
+    season and episode breakdown, status switcher, and review logs.
+    """
+    entry = get_object_or_404(SeriesEntry, id=series_id, user=request.user)
+
+    # Backfill TMDB metadata (cast, backdrop, tagline) if not present
+    if entry.tmdb_id and (not entry.cast or not entry.backdrop_path):
+        SeriesProgressionEngine.sync_tmdb_metadata(entry)
+
+    seasons = entry.seasons.all().order_by("season_number")
+    
+    # Calculate watch progress percentage
+    total_eps = entry.total_episodes
+    if total_eps > 0:
+        watched_eps = 0
+        for s in seasons:
+            if s.season_number < entry.current_season_number:
+                watched_eps += s.episode_count
+            elif s.season_number == entry.current_season_number:
+                watched_eps += min(entry.current_episode_number, s.episode_count)
+        progress_pct = min(100, int((watched_eps / total_eps) * 100))
+    else:
+        progress_pct = 100 if entry.user_status == SeriesUserStatus.COMPLETED else 0
+
+    context = {
+        "series": entry,
+        "seasons": seasons,
+        "progress_pct": progress_pct,
+        "status_choices": SeriesUserStatus.choices,
+    }
+    return render(request, "series/detail.html", context)
+
+@login_required
+def update_series_details_view(request, series_id):
+    """
+    Handles updates to series status (including full status reversion),
+    rating, review notes, progress (season/episode), and custom metadata.
+    """
+    entry = get_object_or_404(SeriesEntry, id=series_id, user=request.user)
+
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        if new_status and new_status in SeriesUserStatus.values:
+            old_status = entry.user_status
+            entry.user_status = new_status
+            
+            # Reversion & status transitions
+            if new_status == SeriesUserStatus.COMPLETED:
+                # Mark all seasons completed
+                entry.seasons.update(is_completed=True, completed_at=timezone.now())
+                entry.current_season_number = entry.total_seasons or 1
+            elif old_status == SeriesUserStatus.COMPLETED and new_status in [SeriesUserStatus.PLAN_TO_WATCH, SeriesUserStatus.WATCHING]:
+                # Reverting back from COMPLETED
+                if new_status == SeriesUserStatus.PLAN_TO_WATCH:
+                    entry.current_season_number = 1
+                    entry.current_episode_number = 0
+                    entry.seasons.update(is_completed=False, completed_at=None)
+                elif new_status == SeriesUserStatus.WATCHING:
+                    # Keep at season 1 episode 1 or leave current
+                    if entry.current_season_number == 0:
+                        entry.current_season_number = 1
+
+        # Current progress overrides
+        season_num = request.POST.get("current_season_number")
+        if season_num is not None and str(season_num).isdigit():
+            entry.current_season_number = max(1, int(season_num))
+            
+        ep_num = request.POST.get("current_episode_number")
+        if ep_num is not None and str(ep_num).isdigit():
+            entry.current_episode_number = max(0, int(ep_num))
+
+        # Personal Chronicle
+        rating = request.POST.get("rating")
+        if rating:
+            try:
+                val = float(rating)
+                if 1.0 <= val <= 10.0:
+                    entry.rating = val
+            except ValueError:
+                pass
+        elif rating == "":
+            entry.rating = None
+
+        if "review" in request.POST:
+            entry.review = request.POST.get("review", "").strip()
+
+        # Custom Series Fields & S3 Poster
+        if entry.is_custom:
+            title = request.POST.get("title", "").strip()
+            if title:
+                entry.title = title
+            entry.overview = request.POST.get("overview", "").strip()
+            entry.genres = request.POST.get("genres", "").strip()
+            entry.cast = request.POST.get("cast", "").strip()
+            entry.first_air_date = request.POST.get("first_air_date") or None
+
+            total_seasons_val = request.POST.get("total_seasons")
+            if total_seasons_val and str(total_seasons_val).isdigit():
+                entry.total_seasons = max(1, int(total_seasons_val))
+
+            total_episodes_val = request.POST.get("total_episodes")
+            if total_episodes_val and str(total_episodes_val).isdigit():
+                entry.total_episodes = max(0, int(total_episodes_val))
+
+            poster_file = request.FILES.get("poster_file")
+            if poster_file:
+                entry.custom_poster = poster_file
+
+        entry.save()
+        messages.success(request, f"Updated '{entry.title}' successfully.")
+        return redirect("series_detail", series_id=entry.id)
+
+    return redirect("series_detail", series_id=entry.id)
+
+@login_required
+def delete_series_view(request, series_id):
+    """
+    Deletes the series entry and redirects back to the series list.
+    """
+    entry = get_object_or_404(SeriesEntry, id=series_id, user=request.user)
+    if request.method == "POST":
+        title = entry.title
+        entry.delete()
+        messages.success(request, f"Removed '{title}' from your library.")
+        return redirect("series_list")
+
+    return redirect("series_detail", series_id=entry.id)

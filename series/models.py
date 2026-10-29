@@ -28,6 +28,8 @@ class SeriesEntry(models.Model):
     overview = models.TextField(blank=True)
     genres = models.CharField(max_length=255, blank=True)
     show_status = models.CharField(max_length=50, choices=SeriesShowStatus.choices, default=SeriesShowStatus.RETURNING)
+    cast = models.TextField(blank=True)
+    tagline = models.CharField(max_length=255, blank=True)
     
     total_seasons = models.PositiveIntegerField(default=1)
     total_episodes = models.PositiveIntegerField(default=0)
@@ -77,6 +79,20 @@ class SeriesEntry(models.Model):
                 return self.poster_path
             return f"https://image.tmdb.org/t/p/w500{self.poster_path}"
         return "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=400&q=80"
+
+    @property
+    def backdrop_url(self):
+        if self.backdrop_path:
+            if self.backdrop_path.startswith("http"):
+                return self.backdrop_path
+            return f"https://image.tmdb.org/t/p/w1280{self.backdrop_path}"
+        return self.poster_url
+
+    @property
+    def cast_list(self):
+        if not self.cast:
+            return []
+        return [c.strip() for c in self.cast.split(",") if c.strip()]
 
     @property
     def has_new_episode_aired(self):
