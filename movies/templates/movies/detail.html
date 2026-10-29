@@ -1,0 +1,291 @@
+{% extends "base_app.html" %}
+
+{% block title %}{{ movie.title }} — Movie Details{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Back Navigation Bar -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'movie_list' %}" class="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors group">
+            <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back to Movies</span>
+        </a>
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-zinc-500 font-mono">ID: #{{ movie.id }}</span>
+            {% if movie.is_custom %}
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                Custom Entry
+            </span>
+            {% else %}
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">
+                TMDB Synced
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Cinematic Backdrop Hero Card -->
+    <div class="relative rounded-3xl overflow-hidden border border-zinc-800 bg-zinc-950 shadow-2xl">
+        <!-- Backdrop Banner with Radial Gradient Vignette -->
+        <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity filter blur-sm scale-105 pointer-events-none"
+             style="background-image: url('{{ movie.backdrop_url }}');"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-zinc-950/90 to-transparent pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-black via-zinc-950/80 to-transparent pointer-events-none"></div>
+
+        <!-- Hero Content Grid -->
+        <div class="relative z-10 p-6 sm:p-10 flex flex-col md:flex-row gap-8 items-start">
+            <!-- Left Poster Column -->
+            <div class="flex flex-col items-center gap-4 shrink-0 mx-auto md:mx-0">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"
+                     class="w-52 sm:w-64 rounded-2xl object-cover border-2 border-zinc-800/90 shadow-2xl">
+                
+                <!-- Quick Re-watch Button -->
+                {% if movie.status == "COMPLETED" %}
+                <form action="{% url 'movie_rewatch' movie.id %}" method="post" class="w-full">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-zinc-200 hover:text-white text-xs font-bold rounded-xl border border-zinc-800 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Log Rewatch ({{ movie.rewatch_count }})</span>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Right Details Column -->
+            <div class="flex-1 space-y-6 min-w-0">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2.5 mb-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider
+                            {% if movie.status == 'COMPLETED' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/40
+                            {% elif movie.status == 'WATCHING' %}bg-amber-500/20 text-amber-400 border border-amber-500/40
+                            {% elif movie.status == 'PLAN_TO_WATCH' %}bg-zinc-800 text-zinc-300 border border-zinc-700
+                            {% else %}bg-red-950/40 text-red-400 border border-red-800{% endif %}">
+                            {{ movie.get_status_display }}
+                        </span>
+
+                        {% if movie.release_date %}
+                        <span class="text-xs text-zinc-400 font-medium">{{ movie.release_date|date:"Y" }}</span>
+                        <span class="text-zinc-600">&bull;</span>
+                        {% endif %}
+
+                        {% if movie.runtime %}
+                        <span class="text-xs text-zinc-300 font-mono font-medium">{{ movie.runtime }} mins</span>
+                        <span class="text-zinc-600">&bull;</span>
+                        {% endif %}
+
+                        {% if movie.director %}
+                        <span class="text-xs text-zinc-300 font-medium">Directed by <strong class="text-white">{{ movie.director }}</strong></span>
+                        {% endif %}
+                    </div>
+
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                        {{ movie.title }}
+                    </h1>
+
+                    {% if movie.tagline %}
+                    <p class="text-sm text-zinc-400 italic mt-1">&ldquo;{{ movie.tagline }}&rdquo;</p>
+                    {% endif %}
+                </div>
+
+                <!-- Genres Badges -->
+                {% if movie.genres %}
+                <div class="flex flex-wrap gap-2">
+                    {% for g in movie.genres.split %}
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-300 font-medium">
+                        {{ g|cut:"," }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Overview / Synopsis -->
+                <div class="space-y-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Synopsis</h3>
+                    <p class="text-sm text-zinc-300 leading-relaxed max-w-3xl">
+                        {{ movie.overview|default:"No synopsis available for this movie entry." }}
+                    </p>
+                </div>
+
+                <!-- Cast & Actors List -->
+                {% if movie.cast_list %}
+                <div class="space-y-2.5 pt-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Starring Cast & Actors</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for actor in movie.cast_list %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                            {{ actor }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Management & Personal Chronicle Hub -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Status Switcher Card (Supports Full Reversion) -->
+        <div class="p-6 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl space-y-6">
+            <div>
+                <h2 class="text-base font-bold text-white tracking-tight">Status & State</h2>
+                <p class="text-xs text-zinc-400 mt-0.5">Switch or revert tracking status at any time.</p>
+            </div>
+
+            <!-- Instant Status Buttons -->
+            <form action="{% url 'movie_update_details' movie.id %}" method="post" class="space-y-2.5">
+                {% csrf_token %}
+                <button type="submit" name="status" value="PLAN_TO_WATCH"
+                        class="w-full py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-between border cursor-pointer
+                        {% if movie.status == 'PLAN_TO_WATCH' %}bg-zinc-100 text-zinc-950 border-white shadow-lg
+                        {% else %}bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 border-zinc-800{% endif %}">
+                    <div class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Plan to Watch (Watchlist)</span>
+                    </div>
+                    {% if movie.status == 'PLAN_TO_WATCH' %}&bull; Active{% endif %}
+                </button>
+
+                <button type="submit" name="status" value="WATCHING"
+                        class="w-full py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-between border cursor-pointer
+                        {% if movie.status == 'WATCHING' %}bg-amber-500 text-zinc-950 border-amber-400 shadow-lg shadow-amber-500/20
+                        {% else %}bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 border-zinc-800{% endif %}">
+                    <div class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <span>Currently Watching</span>
+                    </div>
+                    {% if movie.status == 'WATCHING' %}&bull; Active{% endif %}
+                </button>
+
+                <button type="submit" name="status" value="COMPLETED"
+                        class="w-full py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-between border cursor-pointer
+                        {% if movie.status == 'COMPLETED' %}bg-emerald-500 text-zinc-950 border-emerald-400 shadow-lg shadow-emerald-500/20
+                        {% else %}bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 border-zinc-800{% endif %}">
+                    <div class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Completed (Watched)</span>
+                    </div>
+                    {% if movie.status == 'COMPLETED' %}&bull; Active{% endif %}
+                </button>
+
+                <button type="submit" name="status" value="DROPPED"
+                        class="w-full py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-between border cursor-pointer
+                        {% if movie.status == 'DROPPED' %}bg-red-500 text-white border-red-400 shadow-lg
+                        {% else %}bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 border-zinc-800{% endif %}">
+                    <div class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>Dropped</span>
+                    </div>
+                    {% if movie.status == 'DROPPED' %}&bull; Active{% endif %}
+                </button>
+            </form>
+
+            <!-- Danger Zone: Delete -->
+            <div class="pt-6 border-t border-zinc-900">
+                <form action="{% url 'movie_delete' movie.id %}" method="post" onsubmit="return confirm('Are you sure you want to remove this movie from your chronicle?');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-2.5 px-3 bg-red-950/30 hover:bg-red-950/60 border border-red-900/50 text-red-300 font-semibold text-xs rounded-xl transition-all cursor-pointer">
+                        Remove Movie from Tracker
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Personal Log & Review Editor -->
+        <div class="lg:col-span-2 p-6 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-xl space-y-6">
+            <div>
+                <h2 class="text-base font-bold text-white tracking-tight">Personal Chronicle & Notes</h2>
+                <p class="text-xs text-zinc-400 mt-0.5">Record your reflections, personal score, and viewing timeline.</p>
+            </div>
+
+            <form action="{% url 'movie_update_details' movie.id %}" method="post" enctype="multipart/form-data" class="space-y-5">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="{{ movie.status }}">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Rating -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Rating (1 to 10)</label>
+                        <div class="relative">
+                            <input type="number" step="0.5" min="1" max="10" name="rating" value="{{ movie.rating|default:'' }}" placeholder="e.g. 8.5"
+                                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500">
+                            <span class="absolute right-3 top-2.5 text-xs text-amber-400 font-bold">★</span>
+                        </div>
+                    </div>
+
+                    <!-- Watch Date -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Watch Date</label>
+                        <input type="date" name="watch_date" value="{{ movie.watch_date|date:'Y-m-d'|default:'' }}"
+                               class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <!-- Rewatch Count -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Rewatches</label>
+                        <input type="number" min="0" name="rewatch_count" value="{{ movie.rewatch_count }}"
+                               class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <!-- Review Textarea -->
+                <div>
+                    <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Reflection & Review</label>
+                    <textarea name="review" rows="4" placeholder="What stood out to you? Thoughts on the cinematography, pacing, or performance..."
+                              class="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 transition-colors leading-relaxed">{{ movie.review }}</textarea>
+                </div>
+
+                <!-- Custom Movie Editable Metadata -->
+                {% if movie.is_custom %}
+                <div class="pt-4 border-t border-zinc-900 space-y-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400">Edit Custom Metadata</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 mb-1">Director</label>
+                            <input type="text" name="director" value="{{ movie.director }}" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-zinc-400 mb-1">Runtime (mins)</label>
+                            <input type="number" name="runtime" value="{{ movie.runtime }}" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-zinc-400 mb-1">Starring Actors (Comma-separated)</label>
+                        <input type="text" name="cast" value="{{ movie.cast }}" placeholder="e.g. Leonardo DiCaprio, Cillian Murphy" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2 text-xs text-white">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-zinc-400 mb-1">Replace Poster Artwork (S3 Storage)</label>
+                        <input type="file" name="poster_file" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer">
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Save Button -->
+                <div class="flex justify-end pt-2">
+                    <button type="submit"
+                            class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

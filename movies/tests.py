@@ -34,7 +34,7 @@ class MovieTrackingTests(TestCase):
         self.assertContains(res, "bg-emerald-500")
 
     @patch("services.tmdb.tmdb_service.get_movie_details")
-    def test_add_movie_from_tmdb(self, mock_get_details):
+    def test_add_movie_from_tmdb_and_redirect_to_detail(self, mock_get_details):
         mock_get_details.return_value = {
             "id": 693134,
             "title": "Dune: Part Two",
@@ -44,7 +44,10 @@ class MovieTrackingTests(TestCase):
             "poster_path": "/czembW0Rk1Ke7lCJGhk4TGmm54v.jpg",
             "overview": "Paul Atreides unites with Chani and the Fremen...",
             "genres": [{"id": 878, "name": "Sci-Fi"}],
-            "credits": {"crew": [{"job": "Director", "name": "Denis Villeneuve"}]}
+            "credits": {
+                "crew": [{"job": "Director", "name": "Denis Villeneuve"}],
+                "cast": [{"name": "Timothée Chalamet"}, {"name": "Zendaya"}]
+            }
         }
 
         res = self.client.post(reverse("movie_add"), {
@@ -59,12 +62,15 @@ class MovieTrackingTests(TestCase):
         self.assertEqual(movie.director, "Denis Villeneuve")
         self.assertEqual(movie.runtime, 166)
         self.assertEqual(movie.status, MovieStatus.WATCHING)
+        self.assertIn("Timothée Chalamet", movie.cast)
+        self.assertIn(reverse("movie_detail", args=[movie.id]), res.url)
 
     def test_add_custom_movie_with_image_upload(self):
         test_image = self._generate_test_image()
         res = self.client.post(reverse("movie_add"), {
             "title": "My S3 Custom Movie",
             "director": "Christopher Nolan",
+            "cast": "Leonardo DiCaprio, Joseph Gordon-Levitt",
             "runtime": "150",
             "status": "COMPLETED",
             "rating": "9.5",
@@ -78,31 +84,87 @@ class MovieTrackingTests(TestCase):
         self.assertTrue(movie.is_custom)
         self.assertEqual(movie.runtime, 150)
         self.assertEqual(movie.status, MovieStatus.COMPLETED)
+        self.assertIn("Leonardo DiCaprio", movie.cast)
         self.assertIsNotNone(movie.custom_poster)
         self.assertTrue(movie.poster_url.endswith(".jpg"))
 
-    def test_update_movie_status(self):
+    def test_movie_detail_view_rendering(self):
         movie = MovieEntry.objects.create(
             user=self.user,
-            title="Oppenheimer",
+            title="Inception",
+            director="Christopher Nolan",
+            cast="Leonardo DiCaprio, Marion Cotillard, Elliot Page",
+            runtime=148,
+            overview="A thief who steals corporate secrets through the use of dream-sharing technology...",
+            status=MovieStatus.WATCHING,
+            rating=9.0
+        )
+        res = self.client.get(reverse("movie_detail", args=[movie.id]))
+        self.assertEqual(res.status_code, 200)
+        self.assertTemplateUsed(res, "movies/detail.html")
+        self.assertContains(res, "Inception")
+        self.assertContains(res, "Christopher Nolan")
+        self.assertContains(res, "Leonardo DiCaprio")
+        self.assertContains(res, "Marion Cotillard")
+        self.assertContains(res, "148 mins")
+
+    def test_movie_status_reversion_completed_to_plan_to_watch(self):
+        """Tests reverting from Completed back to Plan to Watch and clearing watch date"""
+        movie = MovieEntry.objects.create(
+            user=self.user,
+            title="Accidentally Marked Watched",
+            status=MovieStatus.COMPLETED,
+            watch_date=timezone.now().date()
+        )
+        # User changes status back to Plan to Watch
+        res = self.client.post(reverse("movie_update_details", args=[movie.id]), {
+            "status": MovieStatus.PLAN_TO_WATCH,
+            "rating": "",
+            "review": "",
+        })
+        self.assertEqual(res.status_code, 302)
+        movie.refresh_from_db()
+        self.assertEqual(movie.status, MovieStatus.PLAN_TO_WATCH)
+        self.assertIsNone(movie.watch_date)
+
+    def test_movie_update_personal_log(self):
+        movie = MovieEntry.objects.create(
+            user=self.user,
+            title="The Dark Knight",
             status=MovieStatus.PLAN_TO_WATCH
         )
-        res = self.client.post(reverse("movie_update_status", args=[movie.id]), {
-            "status": "COMPLETED"
+        res = self.client.post(reverse("movie_update_details", args=[movie.id]), {
+            "status": MovieStatus.COMPLETED,
+            "rating": "9.8",
+            "watch_date": "2026-10-25",
+            "rewatch_count": "3",
+            "review": "Heath Ledger's Joker is legendary.",
         })
         self.assertEqual(res.status_code, 302)
         movie.refresh_from_db()
         self.assertEqual(movie.status, MovieStatus.COMPLETED)
-        self.assertIsNotNone(movie.watch_date)
+        self.assertEqual(float(movie.rating), 9.8)
+        self.assertEqual(movie.rewatch_count, 3)
+        self.assertIn("Heath Ledger", movie.review)
 
-    def test_rewatch_movie(self):
+    def test_movie_delete(self):
+        movie = MovieEntry.objects.create(
+            user=self.user,
+            title="Movie to Delete",
+            status=MovieStatus.PLAN_TO_WATCH
+        )
+        res = self.client.post(reverse("movie_delete", args=[movie.id]))
+        self.assertEqual(res.status_code, 302)
+        self.assertIn(reverse("movie_list"), res.url)
+        self.assertFalse(MovieEntry.objects.filter(id=movie.id).exists())
+
+    def test_list_cards_link_to_detail(self):
         movie = MovieEntry.objects.create(
             user=self.user,
             title="Interstellar",
-            status=MovieStatus.COMPLETED,
-            rewatch_count=1
+            status=MovieStatus.PLAN_TO_WATCH
         )
-        res = self.client.post(reverse("movie_rewatch", args=[movie.id]))
-        self.assertEqual(res.status_code, 302)
-        movie.refresh_from_db()
-        self.assertEqual(movie.rewatch_count, 2)
+        res = self.client.get(reverse("movie_list"))
+        self.assertEqual(res.status_code, 200)
+        detail_url = reverse("movie_detail", args=[movie.id])
+        self.assertContains(res, f'href="{detail_url}"')
