@@ -130,6 +130,27 @@ class ComicMangaEntry(models.Model):
         return "Vol. 0"
 
     @property
+    def is_completed(self) -> bool:
+        """Returns True if the entry has been marked COMPLETED or reached maximum chapters/volumes."""
+        if self.status == ComicMangaStatus.COMPLETED:
+            return True
+        if self.total_chapters > 0 and self.current_chapter >= self.total_chapters:
+            return True
+        if self.total_volumes > 0 and self.current_volume >= self.total_volumes:
+            return True
+        return False
+
+    @property
+    def is_chapter_maxed(self) -> bool:
+        """Returns True if current chapter has reached total chapters or is completed."""
+        return self.is_completed or (self.total_chapters > 0 and self.current_chapter >= self.total_chapters)
+
+    @property
+    def is_volume_maxed(self) -> bool:
+        """Returns True if current volume has reached total volumes or is completed."""
+        return self.is_completed or (self.total_volumes > 0 and self.current_volume >= self.total_volumes)
+
+    @property
     def progress_display(self) -> str:
         """Combined formatted string showing both chapter and volume progress clearly."""
         has_chap = self.total_chapters > 0 or self.current_chapter > 0

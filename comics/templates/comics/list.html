@@ -118,9 +118,11 @@
                             {% csrf_token %}
                             <input type="hidden" name="delta_chapter" value="1">
                             <input type="hidden" name="next" value="{% url 'comic_list' %}">
-                            <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition flex items-center justify-center gap-1 cursor-pointer" title="Increment Chapter">
+                            <button type="submit" {% if item.is_chapter_maxed %}disabled{% endif %}
+                                    class="w-full py-1.5 px-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1 {% if item.is_chapter_maxed %}bg-zinc-900 text-zinc-600 border border-zinc-800/40 cursor-not-allowed opacity-60{% else %}bg-zinc-800 hover:bg-zinc-700 text-zinc-200 cursor-pointer{% endif %}"
+                                    title="{% if item.is_chapter_maxed %}Chapters Complete{% else %}Increment Chapter{% endif %}">
                                 <span>+1 Ch</span>
-                                <span class="text-[10px] text-zinc-400">({{ item.current_chapter }}{% if item.total_chapters %}/{{ item.total_chapters }}{% endif %})</span>
+                                <span class="text-[10px] {% if item.is_chapter_maxed %}text-zinc-600{% else %}text-zinc-400{% endif %}">({{ item.current_chapter }}{% if item.total_chapters %}/{{ item.total_chapters }}{% endif %})</span>
                             </button>
                         </form>
 
@@ -129,9 +131,11 @@
                             {% csrf_token %}
                             <input type="hidden" name="delta_volume" value="1">
                             <input type="hidden" name="next" value="{% url 'comic_list' %}">
-                            <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition flex items-center justify-center gap-1 cursor-pointer" title="Increment Volume">
+                            <button type="submit" {% if item.is_volume_maxed %}disabled{% endif %}
+                                    class="w-full py-1.5 px-2 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1 {% if item.is_volume_maxed %}bg-zinc-900 text-zinc-600 border border-zinc-800/40 cursor-not-allowed opacity-60{% else %}bg-zinc-800 hover:bg-zinc-700 text-zinc-200 cursor-pointer{% endif %}"
+                                    title="{% if item.is_volume_maxed %}Volumes Complete{% else %}Increment Volume{% endif %}">
                                 <span>+1 Vol</span>
-                                <span class="text-[10px] text-amber-400/80">({{ item.current_volume }}{% if item.total_volumes %}/{{ item.total_volumes }}{% endif %})</span>
+                                <span class="text-[10px] {% if item.is_volume_maxed %}text-zinc-600{% else %}text-amber-400/80{% endif %}">({{ item.current_volume }}{% if item.total_volumes %}/{{ item.total_volumes }}{% endif %})</span>
                             </button>
                         </form>
                     </div>

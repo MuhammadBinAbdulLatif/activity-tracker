@@ -245,14 +245,17 @@ def update_comic_progress_view(request, id):
             if not entry.start_date:
                 entry.start_date = timezone.now().date()
 
-        # Check for auto-completion (either chapters reached or volumes reached)
-        is_completed = False
-        if entry.total_chapters > 0 and entry.current_chapter >= entry.total_chapters:
-            is_completed = True
-        elif entry.total_volumes > 0 and entry.current_volume >= entry.total_volumes:
-            is_completed = True
-
-        if is_completed:
+        # Check for auto-completion:
+        # If total volumes reached, auto-complete chapters to total chapters as well
+        if entry.total_volumes > 0 and entry.current_volume >= entry.total_volumes:
+            if entry.total_chapters > 0:
+                entry.current_chapter = entry.total_chapters
+            entry.status = ComicMangaStatus.COMPLETED
+            if not entry.finish_date:
+                entry.finish_date = timezone.now().date()
+        elif entry.total_chapters > 0 and entry.current_chapter >= entry.total_chapters:
+            if entry.total_volumes > 0:
+                entry.current_volume = entry.total_volumes
             entry.status = ComicMangaStatus.COMPLETED
             if not entry.finish_date:
                 entry.finish_date = timezone.now().date()
