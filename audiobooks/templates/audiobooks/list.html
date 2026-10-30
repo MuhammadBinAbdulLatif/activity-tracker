@@ -1,0 +1,394 @@
+{% extends "base_app.html" %}
+
+{% block title %}Audiobooks — uTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-7xl mx-auto pb-16">
+    <!-- Top Header & Primary Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    Auditory Journey
+                </span>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white">Audiobooks</h1>
+            <p class="text-sm text-zinc-400 mt-1">Track listening sessions, narrator performances, spoken revelations, and runtime hours.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="document.getElementById('addAudiobookModal').showModal()"
+                    class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Add Audiobook</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Currently Listening Section -->
+    {% if listening %}
+    <section class="space-y-5">
+        <div class="flex items-center gap-2.5">
+            <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
+            <h2 class="text-lg font-bold text-white tracking-tight">Currently Listening</h2>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-400">
+                {{ listening.count }} Active
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for ab in listening %}
+            <div class="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 shadow-xl transition-all flex flex-col justify-between space-y-5 group">
+                <div>
+                    <div class="flex gap-4">
+                        <a href="{% url 'audiobook_detail' ab.id %}" class="w-24 h-24 rounded-xl overflow-hidden bg-zinc-900 flex-shrink-0 border border-zinc-800 shadow-md group-hover:scale-105 transition-transform">
+                            <img src="{{ ab.display_cover }}" alt="{{ ab.title }}" class="w-full h-full object-cover">
+                        </a>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">{{ ab.playback_speed }}x Speed</span>
+                                <span class="text-[11px] font-mono text-zinc-400">{{ ab.progress_percentage }}%</span>
+                            </div>
+                            <h3 class="text-base font-bold text-white truncate mt-1">
+                                <a href="{% url 'audiobook_detail' ab.id %}" class="hover:text-amber-400 transition-colors">{{ ab.title }}</a>
+                            </h3>
+                            <p class="text-xs text-zinc-400 truncate">{{ ab.author }}</p>
+                            <p class="text-[11px] text-zinc-500 truncate mt-0.5 flex items-center gap-1">
+                                <span>🎙</span>
+                                <span>{{ ab.narrator }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Audio Progress Meter -->
+                    <div class="mt-4 space-y-1.5">
+                        <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden border border-zinc-800/80">
+                            <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: {{ ab.progress_percentage }}%;"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-zinc-500">
+                            <span>{{ ab.current_progress_display }} listened</span>
+                            <span>{{ ab.duration_display }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Steppers and Complete -->
+                <div class="pt-4 flex items-center gap-2 border-t border-zinc-900">
+                    <form method="POST" action="{% url 'audiobook_update_progress' ab.id %}" class="flex-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="COMPLETED">
+                        <button type="submit" class="w-full py-2 px-3 bg-amber-500 hover:bg-amber-400 active:scale-95 text-zinc-950 font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Finish</span>
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{% url 'audiobook_update_progress' ab.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="step" value="15">
+                        <button type="submit" title="Add 15 minutes" class="px-2.5 py-2 bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-xs text-zinc-300 hover:text-white rounded-xl border border-zinc-800 transition-all font-mono">
+                            +15m
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{% url 'audiobook_update_progress' ab.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="step" value="30">
+                        <button type="submit" title="Add 30 minutes" class="px-2.5 py-2 bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-xs text-zinc-300 hover:text-white rounded-xl border border-zinc-800 transition-all font-mono">
+                            +30m
+                        </button>
+                    </form>
+
+                    <a href="{% url 'audiobook_detail' ab.id %}" title="Open Details" class="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl border border-zinc-800 transition-all">
+                        &rarr;
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Listening Wishlist (Plan to Listen) -->
+    <section class="space-y-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-zinc-500"></span>
+                <h2 class="text-base font-semibold text-zinc-100">Listening Wishlist & Queue</h2>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">{{ wishlist.count }}</span>
+            </div>
+        </div>
+
+        {% if wishlist %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {% for ab in wishlist %}
+            <div class="group rounded-2xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 p-4 flex flex-col justify-between transition-all">
+                <div class="flex gap-4">
+                    <a href="{% url 'audiobook_detail' ab.id %}" class="w-20 h-20 rounded-xl overflow-hidden bg-zinc-950 flex-shrink-0 border border-zinc-800 shadow">
+                        <img src="{{ ab.display_cover }}" alt="{{ ab.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                    </a>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[10px] text-zinc-500 font-mono">{{ ab.duration_display }}</span>
+                        <h3 class="text-sm font-semibold text-zinc-100 truncate mt-0.5">
+                            <a href="{% url 'audiobook_detail' ab.id %}" class="hover:text-amber-400 transition-colors">{{ ab.title }}</a>
+                        </h3>
+                        <p class="text-xs text-zinc-400 truncate">{{ ab.author }}</p>
+                        <p class="text-[11px] text-zinc-500 truncate mt-0.5">🎙 {{ ab.narrator }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-zinc-800/60 flex items-center justify-between">
+                    <form method="POST" action="{% url 'audiobook_update_progress' ab.id %}" class="flex-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="LISTENING">
+                        <button type="submit" class="w-full py-1.5 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <span>Start Listening</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80 text-center">
+            <p class="text-zinc-500 text-xs">No upcoming audiobooks in queue.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Completed & Archive Section -->
+    <section class="space-y-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <h2 class="text-base font-semibold text-zinc-100">Completed Chronicles</h2>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">{{ completed.count }}</span>
+            </div>
+        </div>
+
+        {% if completed %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {% for ab in completed %}
+            <div class="group rounded-2xl bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700 p-4 flex flex-col justify-between transition-all">
+                <div>
+                    <div class="flex gap-4">
+                        <a href="{% url 'audiobook_detail' ab.id %}" class="w-20 h-20 rounded-xl overflow-hidden bg-zinc-950 flex-shrink-0 border border-zinc-800 shadow">
+                            <img src="{{ ab.display_cover }}" alt="{{ ab.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                        </a>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] text-zinc-500">{{ ab.finish_date|default:"" }}</span>
+                                {% if ab.rating %}
+                                <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-400">
+                                    ★ {{ ab.rating }}/10
+                                </span>
+                                {% endif %}
+                            </div>
+                            <h3 class="text-sm font-semibold text-zinc-100 truncate mt-0.5">
+                                <a href="{% url 'audiobook_detail' ab.id %}" class="hover:text-amber-400 transition-colors">{{ ab.title }}</a>
+                            </h3>
+                            <p class="text-xs text-zinc-400 truncate">{{ ab.author }}</p>
+                            <p class="text-[11px] text-zinc-500 truncate mt-0.5">🎙 {{ ab.narrator }}</p>
+                        </div>
+                    </div>
+
+                    {% if ab.mind_changing_takeaways %}
+                    <div class="mt-3 p-2.5 rounded-lg bg-amber-950/20 border border-amber-900/40 text-xs text-amber-300/90">
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-amber-400/70 mb-1">Spoken Insight</p>
+                        <p class="line-clamp-2 italic">"{{ ab.mind_changing_takeaways }}"</p>
+                    </div>
+                    {% elif ab.review %}
+                    <div class="mt-3 p-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/60 text-xs text-zinc-400 line-clamp-2">
+                        {{ ab.review }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-zinc-800/60 flex items-center justify-between text-xs text-zinc-500">
+                    <span>⏱ {{ ab.duration_display }}</span>
+                    <a href="{% url 'audiobook_detail' ab.id %}" class="text-amber-400 hover:text-amber-300 font-medium">Listening Journal &rarr;</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-6 rounded-xl bg-zinc-900/30 border border-zinc-800/80 text-center">
+            <p class="text-zinc-500 text-xs">No completed audiobooks yet.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<!-- Add Audiobook Modal -->
+<dialog id="addAudiobookModal" class="p-0 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-100 w-full max-w-2xl backdrop:bg-black/80 backdrop:backdrop-blur-sm shadow-2xl">
+    <div class="p-6">
+        <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
+            <div class="flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/>
+                    </svg>
+                </span>
+                <h3 class="text-lg font-semibold text-zinc-100">Add Audiobook</h3>
+            </div>
+            <button onclick="document.getElementById('addAudiobookModal').close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Tabs: Search Provider vs Custom Entry -->
+        <div class="flex border-b border-zinc-800 mt-4">
+            <button id="abTabSearchBtn" onclick="switchAudiobookTab('search')" class="px-4 py-2 text-xs font-semibold border-b-2 border-amber-500 text-amber-400 transition-colors">
+                Search Audiobooks
+            </button>
+            <button id="abTabCustomBtn" onclick="switchAudiobookTab('custom')" class="px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors">
+                Custom / Manual Entry
+            </button>
+        </div>
+
+        <!-- Search Tab Panel -->
+        <div id="abPanelSearch" class="mt-4 space-y-4">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="audiobookSearchInput"
+                    placeholder="Search by title, author, or narrator..."
+                    class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                    oninput="debounceAudiobookSearch()"
+                >
+                <div id="audiobookSearchSpinner" class="hidden absolute right-3 top-3 text-zinc-500 text-xs">
+                    Searching...
+                </div>
+            </div>
+
+            <!-- HTMX/AJAX Results Container -->
+            <div id="audiobookSearchResults" class="max-h-96 overflow-y-auto space-y-3">
+                <div class="text-center py-8 text-zinc-500 text-xs">
+                    Type a title or author above to search through the audio catalog.
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Manual Entry Panel -->
+        <div id="abPanelCustom" class="mt-4 space-y-4 hidden">
+            <form method="POST" action="{% url 'audiobook_add' %}" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Audiobook Title *</label>
+                    <input type="text" name="title" required placeholder="e.g. Project Hail Mary" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Author</label>
+                        <input type="text" name="author" placeholder="e.g. Andy Weir" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Narrator</label>
+                        <input type="text" name="narrator" placeholder="e.g. Ray Porter" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Initial Status</label>
+                        <select name="status" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                            {% for val, label in status_choices %}
+                            <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Duration Hours</label>
+                        <input type="number" name="duration_hours" placeholder="e.g. 16" min="0" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Duration Minutes</label>
+                        <input type="number" name="duration_mins" placeholder="e.g. 10" min="0" max="59" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Release Year</label>
+                        <input type="number" name="release_year" placeholder="e.g. 2021" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Upload Square Cover</label>
+                        <input type="file" name="cover_file" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-zinc-800">
+                    <button type="button" onclick="document.getElementById('addAudiobookModal').close()" class="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-medium hover:bg-zinc-700">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold">Save Audiobook</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+<script>
+let abSearchTimeout = null;
+
+function switchAudiobookTab(tab) {
+    const searchPanel = document.getElementById('abPanelSearch');
+    const customPanel = document.getElementById('abPanelCustom');
+    const tabSearchBtn = document.getElementById('abTabSearchBtn');
+    const tabCustomBtn = document.getElementById('abTabCustomBtn');
+
+    if (tab === 'search') {
+        searchPanel.classList.remove('hidden');
+        customPanel.classList.add('hidden');
+        tabSearchBtn.className = "px-4 py-2 text-xs font-semibold border-b-2 border-amber-500 text-amber-400 transition-colors";
+        tabCustomBtn.className = "px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors";
+    } else {
+        searchPanel.classList.add('hidden');
+        customPanel.classList.remove('hidden');
+        tabCustomBtn.className = "px-4 py-2 text-xs font-semibold border-b-2 border-amber-500 text-amber-400 transition-colors";
+        tabSearchBtn.className = "px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition-colors";
+    }
+}
+
+function debounceAudiobookSearch() {
+    clearTimeout(abSearchTimeout);
+    const query = document.getElementById('audiobookSearchInput').value.trim();
+    const resultsContainer = document.getElementById('audiobookSearchResults');
+    const spinner = document.getElementById('audiobookSearchSpinner');
+
+    if (query.length < 2) {
+        resultsContainer.innerHTML = '<div class="text-center py-8 text-zinc-500 text-xs">Type a title or author above to search through the audio catalog.</div>';
+        spinner.classList.add('hidden');
+        return;
+    }
+
+    spinner.classList.remove('hidden');
+
+    abSearchTimeout = setTimeout(() => {
+        fetch(`{% url 'audiobook_search' %}?q=${encodeURIComponent(query)}`, {
+            headers: { 'HX-Request': 'true' }
+        })
+        .then(res => res.text())
+        .then(html => {
+            resultsContainer.innerHTML = html;
+            spinner.classList.add('hidden');
+        })
+        .catch(err => {
+            resultsContainer.innerHTML = '<div class="text-center py-4 text-red-400 text-xs">Error loading audiobook results.</div>';
+            spinner.classList.add('hidden');
+        });
+    }, 350);
+}
+</script>
+{% endblock %}

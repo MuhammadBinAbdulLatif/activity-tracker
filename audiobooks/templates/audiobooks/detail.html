@@ -1,0 +1,332 @@
+{% extends "base_app.html" %}
+
+{% block title %}{{ audiobook.title }} — Audio Chronicle{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-5xl mx-auto pb-16">
+    <!-- Back breadcrumb & actions -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'audiobook_list' %}" class="inline-flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back to Audiobooks</span>
+        </a>
+
+        <div class="flex items-center gap-2">
+            <button onclick="document.getElementById('editAudiobookModal').showModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold border border-zinc-700 transition-all cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                <span>Edit / Journal</span>
+            </button>
+
+            <form method="POST" action="{% url 'audiobook_delete' audiobook.id %}" onsubmit="return confirm('Remove this audiobook from your chronicle?');">
+                {% csrf_token %}
+                <button type="submit" class="p-1.5 rounded-xl bg-zinc-900 hover:bg-red-950/40 text-zinc-500 hover:text-red-400 border border-zinc-800 transition-colors cursor-pointer" title="Delete Audiobook">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Detail Hero Card -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-zinc-900/60 border border-zinc-800/80 backdrop-blur-md shadow-2xl">
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+            <!-- Square Audio Cover Artwork -->
+            <div class="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden bg-zinc-950 flex-shrink-0 border border-zinc-800 shadow-2xl shadow-black/80 relative group">
+                <img src="{{ audiobook.display_cover }}" alt="{{ audiobook.title }}" class="w-full h-full object-cover">
+                {% if audiobook.preview_audio_url %}
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-black/70 text-amber-400 font-semibold border border-amber-500/30">Sample Available</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Core Metadata & Stats -->
+            <div class="flex-1 min-w-0 space-y-4">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider
+                        {% if audiobook.status == 'LISTENING' %}bg-amber-500/20 text-amber-400 border border-amber-500/30
+                        {% elif audiobook.status == 'COMPLETED' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
+                        {% elif audiobook.status == 'PLAN_TO_LISTEN' %}bg-zinc-800 text-zinc-300 border border-zinc-700
+                        {% else %}bg-zinc-800 text-zinc-500{% endif %}">
+                        {{ audiobook.get_status_display }}
+                    </span>
+
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-800/80 text-zinc-300 text-xs font-mono border border-zinc-700/50">
+                        {{ audiobook.playback_speed }}x Speed
+                    </span>
+
+                    {% if audiobook.genre %}
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-800/60 text-zinc-400 text-xs border border-zinc-800">
+                        {{ audiobook.genre }}
+                    </span>
+                    {% endif %}
+
+                    {% if audiobook.release_year %}
+                    <span class="text-xs text-zinc-500">Released {{ audiobook.release_year }}</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">{{ audiobook.title }}</h1>
+                    <p class="text-sm sm:text-base text-zinc-300 font-medium mt-1">By <span class="text-white">{{ audiobook.author|default:"Unknown Author" }}</span></p>
+                    <p class="text-xs sm:text-sm text-amber-400/90 font-medium mt-0.5 flex items-center gap-1.5">
+                        <span>🎙 Narrated by</span>
+                        <strong class="text-amber-300">{{ audiobook.narrator }}</strong>
+                    </p>
+                </div>
+
+                <!-- Scores Bar -->
+                <div class="flex flex-wrap items-center gap-6 py-3 border-y border-zinc-800/80 text-xs">
+                    <div>
+                        <span class="text-zinc-500 block uppercase tracking-wider text-[10px]">Story Rating</span>
+                        <div class="text-base font-bold text-amber-400 flex items-center gap-1 mt-0.5">
+                            {% if audiobook.rating %}
+                            <span>★ {{ audiobook.rating }}</span><span class="text-zinc-500 text-xs">/10</span>
+                            {% else %}
+                            <span class="text-zinc-600 text-xs font-normal">Unrated</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-zinc-500 block uppercase tracking-wider text-[10px]">Narration Performance</span>
+                        <div class="text-base font-bold text-amber-300 flex items-center gap-1 mt-0.5">
+                            {% if audiobook.narrator_rating %}
+                            <span>🎙 {{ audiobook.narrator_rating }}</span><span class="text-zinc-500 text-xs">/10</span>
+                            {% else %}
+                            <span class="text-zinc-600 text-xs font-normal">Unrated</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-zinc-500 block uppercase tracking-wider text-[10px]">Total Length</span>
+                        <div class="text-base font-bold text-zinc-200 mt-0.5">
+                            {{ audiobook.duration_display }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-zinc-500 block uppercase tracking-wider text-[10px]">Finished Date</span>
+                        <div class="text-xs font-medium text-zinc-300 mt-1">
+                            {{ audiobook.finish_date|default:"In Progress" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audio Sample Preview Player -->
+                {% if audiobook.preview_audio_url %}
+                <div class="p-3 rounded-2xl bg-zinc-950/80 border border-zinc-800 space-y-2">
+                    <div class="flex items-center justify-between text-xs text-zinc-400">
+                        <span class="font-medium flex items-center gap-1.5 text-amber-400">
+                            <span>▶</span> Audio Sample Preview
+                        </span>
+                        <span class="text-[10px] text-zinc-500">Official Stream</span>
+                    </div>
+                    <audio controls class="w-full h-8 rounded-lg accent-amber-500" preload="none">
+                        <source src="{{ audiobook.preview_audio_url }}" type="audio/mp4">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                {% endif %}
+
+                <!-- Listening Steppers & Progress Bar -->
+                <div class="space-y-2 pt-2">
+                    <div class="flex items-center justify-between text-xs text-zinc-400">
+                        <span>Progress: <strong class="text-white">{{ audiobook.current_progress_display }}</strong> of {{ audiobook.duration_display }}</span>
+                        <span class="font-mono text-amber-400 font-semibold">{{ audiobook.progress_percentage }}%</span>
+                    </div>
+                    <div class="w-full bg-zinc-950 h-2.5 rounded-full overflow-hidden border border-zinc-800">
+                        <div class="bg-amber-500 h-full rounded-full transition-all duration-300" style="width: {{ audiobook.progress_percentage }}%;"></div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 pt-2">
+                        <form method="POST" action="{% url 'audiobook_update_progress' audiobook.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="step" value="-15">
+                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-mono border border-zinc-700 cursor-pointer">
+                                -15m
+                            </button>
+                        </form>
+                        <form method="POST" action="{% url 'audiobook_update_progress' audiobook.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="step" value="15">
+                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-mono border border-zinc-700 cursor-pointer">
+                                +15m
+                            </button>
+                        </form>
+                        <form method="POST" action="{% url 'audiobook_update_progress' audiobook.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="step" value="30">
+                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-mono border border-zinc-700 cursor-pointer">
+                                +30m
+                            </button>
+                        </form>
+                        <form method="POST" action="{% url 'audiobook_update_progress' audiobook.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="step" value="60">
+                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-mono border border-zinc-700 cursor-pointer">
+                                +1 hour
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spoken Insights & Reflection Hub -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Mind-Changing Takeaways -->
+        <div class="p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800/80 space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="p-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                </span>
+                <h3 class="text-sm font-bold text-zinc-100 uppercase tracking-wider">Mind-Changing Insights</h3>
+            </div>
+            {% if audiobook.mind_changing_takeaways %}
+            <p class="text-sm text-zinc-200 leading-relaxed italic whitespace-pre-line">"{{ audiobook.mind_changing_takeaways }}"</p>
+            {% else %}
+            <p class="text-xs text-zinc-500 italic">No mindset shifts recorded yet. Use the edit button to document what shifted your thinking.</p>
+            {% endif %}
+        </div>
+
+        <!-- Spoken Quotes -->
+        <div class="p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800/80 space-y-3">
+            <div class="flex items-center gap-2">
+                <span class="p-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                    </svg>
+                </span>
+                <h3 class="text-sm font-bold text-zinc-100 uppercase tracking-wider">Memorable Passages & Quotes</h3>
+            </div>
+            {% if audiobook.favorite_quotes %}
+            <p class="text-sm text-zinc-200 leading-relaxed whitespace-pre-line">{{ audiobook.favorite_quotes }}</p>
+            {% else %}
+            <p class="text-xs text-zinc-500 italic">No passages saved yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Review & Personal Notes -->
+    <div class="p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800/80 space-y-3">
+        <h3 class="text-sm font-bold text-zinc-100 uppercase tracking-wider">Narration & Story Review</h3>
+        {% if audiobook.review %}
+        <p class="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">{{ audiobook.review }}</p>
+        {% else %}
+        <p class="text-xs text-zinc-500 italic">No detailed review logged yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Audiobook Modal -->
+<dialog id="editAudiobookModal" class="p-0 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-100 w-full max-w-2xl backdrop:bg-black/80 backdrop:backdrop-blur-sm shadow-2xl">
+    <div class="p-6">
+        <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
+            <h3 class="text-lg font-semibold text-zinc-100">Edit Audiobook Journal</h3>
+            <button onclick="document.getElementById('editAudiobookModal').close()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'audiobook_update_details' audiobook.id %}" enctype="multipart/form-data" class="space-y-5 mt-4">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Status</label>
+                    <select name="status" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                        {% for val, label in status_choices %}
+                        <option value="{{ val }}" {% if audiobook.status == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Story Rating (1-10)</label>
+                    <input type="number" step="0.1" min="1" max="10" name="rating" value="{{ audiobook.rating|default:'' }}" placeholder="9.5" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Narration Rating (1-10)</label>
+                    <input type="number" step="0.1" min="1" max="10" name="narrator_rating" value="{{ audiobook.narrator_rating|default:'' }}" placeholder="10" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Current Mins Listened</label>
+                    <input type="number" name="current_progress_minutes" value="{{ audiobook.current_progress_minutes }}" min="0" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Total Duration (Minutes)</label>
+                    <input type="number" name="duration_minutes" value="{{ audiobook.duration_minutes }}" min="0" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Playback Speed</label>
+                    <input type="number" step="0.05" min="0.5" max="3.5" name="playback_speed" value="{{ audiobook.playback_speed }}" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500">
+                </div>
+            </div>
+
+            <!-- Date Dialog Inputs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Date Started</label>
+                    <input type="date" name="start_date" value="{{ audiobook.start_date|date:'Y-m-d' }}" onclick="if(this.showPicker) this.showPicker()" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500 cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Date Finished</label>
+                    <input type="date" name="finish_date" value="{{ audiobook.finish_date|date:'Y-m-d' }}" onclick="if(this.showPicker) this.showPicker()" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500 cursor-pointer">
+                </div>
+            </div>
+
+            {% if audiobook.is_custom %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Title</label>
+                    <input type="text" name="title" value="{{ audiobook.title }}" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Narrator</label>
+                    <input type="text" name="narrator" value="{{ audiobook.narrator }}" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100">
+                </div>
+            </div>
+            {% endif %}
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Upload New Square Cover Artwork</label>
+                <input type="file" name="cover_file" accept="image/*" class="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Mind-Changing Insights & Takeaways</label>
+                <textarea name="mind_changing_takeaways" rows="3" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500" placeholder="What core principle or paradigm was altered?">{{ audiobook.mind_changing_takeaways }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Favorite Spoken Quotes</label>
+                <textarea name="favorite_quotes" rows="2" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500" placeholder="Memorable passages spoken by the narrator...">{{ audiobook.favorite_quotes }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Narration & Story Review</label>
+                <textarea name="review" rows="3" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-amber-500" placeholder="How was the narrator's pacing, voices, cadence, and the overall listening experience?">{{ audiobook.review }}</textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-3 border-t border-zinc-800">
+                <button type="button" onclick="document.getElementById('editAudiobookModal').close()" class="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-medium hover:bg-zinc-700">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+{% endblock %}
