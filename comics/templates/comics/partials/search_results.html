@@ -1,0 +1,116 @@
+{% if results %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1">
+    {% for item in results %}
+    <div class="flex gap-3 bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 hover:border-zinc-700 transition group relative">
+        <!-- Cover Art -->
+        <div class="w-16 h-24 rounded-lg bg-zinc-950 overflow-hidden flex-shrink-0 border border-zinc-800/80">
+            {% if item.cover_url %}
+            <img src="{{ item.cover_url }}" alt="{{ item.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center text-zinc-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Metadata & Actions -->
+        <div class="flex flex-col justify-between flex-1 min-w-0">
+            <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                    <span class="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded {% if item.item_type == 'COMIC' %}bg-amber-950/60 text-amber-400 border border-amber-800/50{% elif item.item_type == 'LIGHT_NOVEL' %}bg-purple-950/60 text-purple-400 border border-purple-800/50{% else %}bg-rose-950/60 text-rose-400 border border-rose-800/50{% endif %}">
+                        {{ item.item_type }}
+                    </span>
+                    {% if item.start_year %}
+                    <span class="text-[10px] text-zinc-500 font-medium">{{ item.start_year }}</span>
+                    {% endif %}
+                    {% if item.source %}
+                    <span class="text-[9px] text-zinc-600 ml-auto font-mono">{{ item.source }}</span>
+                    {% endif %}
+                </div>
+                <h4 class="text-sm font-semibold text-zinc-100 truncate group-hover:text-rose-400 transition-colors" title="{{ item.title }}">
+                    {{ item.title }}
+                </h4>
+                {% if item.original_title and item.original_title != item.title %}
+                <p class="text-[11px] text-zinc-500 truncate font-sans">{{ item.original_title }}</p>
+                {% endif %}
+                <p class="text-xs text-zinc-400 truncate mt-0.5">
+                    {% if item.creator_author %}{{ item.creator_author }}{% else %}{{ item.publisher }}{% endif %}
+                </p>
+                <div class="flex items-center gap-2 mt-1 text-[11px] text-zinc-500">
+                    {% if item.total_chapters %}
+                    <span>{{ item.total_chapters }} chs</span>
+                    {% endif %}
+                    {% if item.total_volumes %}
+                    <span>• {{ item.total_volumes }} vols</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="mt-2.5 flex items-center gap-2 pt-2 border-t border-zinc-800/60">
+                {% if item.is_tracked %}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Tracked
+                </span>
+                {% else %}
+                <!-- Plan to read -->
+                <form action="{% url 'comic_add' %}" method="POST" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="external_id" value="{{ item.external_id }}">
+                    <input type="hidden" name="title" value="{{ item.title }}">
+                    <input type="hidden" name="original_title" value="{{ item.original_title }}">
+                    <input type="hidden" name="item_type" value="{{ item.item_type }}">
+                    <input type="hidden" name="creator_author" value="{{ item.creator_author }}">
+                    <input type="hidden" name="artist" value="{{ item.artist }}">
+                    <input type="hidden" name="publisher" value="{{ item.publisher }}">
+                    <input type="hidden" name="start_year" value="{{ item.start_year }}">
+                    <input type="hidden" name="total_chapters" value="{{ item.total_chapters }}">
+                    <input type="hidden" name="total_volumes" value="{{ item.total_volumes }}">
+                    <input type="hidden" name="cover_url" value="{{ item.cover_url }}">
+                    <input type="hidden" name="description" value="{{ item.description }}">
+                    <input type="hidden" name="status" value="PLAN_TO_READ">
+                    <button type="submit" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition">
+                        + Wishlist
+                    </button>
+                </form>
+
+                <!-- Currently Reading -->
+                <form action="{% url 'comic_add' %}" method="POST" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="external_id" value="{{ item.external_id }}">
+                    <input type="hidden" name="title" value="{{ item.title }}">
+                    <input type="hidden" name="original_title" value="{{ item.original_title }}">
+                    <input type="hidden" name="item_type" value="{{ item.item_type }}">
+                    <input type="hidden" name="creator_author" value="{{ item.creator_author }}">
+                    <input type="hidden" name="artist" value="{{ item.artist }}">
+                    <input type="hidden" name="publisher" value="{{ item.publisher }}">
+                    <input type="hidden" name="start_year" value="{{ item.start_year }}">
+                    <input type="hidden" name="total_chapters" value="{{ item.total_chapters }}">
+                    <input type="hidden" name="total_volumes" value="{{ item.total_volumes }}">
+                    <input type="hidden" name="cover_url" value="{{ item.cover_url }}">
+                    <input type="hidden" name="description" value="{{ item.description }}">
+                    <input type="hidden" name="status" value="READING">
+                    <button type="submit" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-rose-600 hover:bg-rose-500 text-white transition">
+                        Start Reading
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="py-12 text-center text-zinc-500">
+    <svg class="w-10 h-10 mx-auto text-zinc-600 mb-2 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <p class="text-sm">No series or volumes found matching your search.</p>
+    <p class="text-xs text-zinc-600 mt-1">Try another title keyword or use the manual fallback tab below.</p>
+</div>
+{% endif %}

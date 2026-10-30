@@ -1,0 +1,357 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}{{ entry.title }} | uTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Top Breadcrumb / Return Bar -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'comic_list' %}" class="inline-flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-white transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back to Comics & Manga</span>
+        </a>
+
+        <div class="flex items-center gap-2">
+            <!-- Edit Button -->
+            <button onclick="document.getElementById('edit-modal').classList.remove('hidden')" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                <span>Edit Entry</span>
+            </button>
+
+            <!-- Delete Form -->
+            <form action="{% url 'comic_delete' entry.id %}" method="POST" onsubmit="return confirm('Are you sure you want to remove this entry from your chronicle?');">
+                {% csrf_token %}
+                <button type="submit" class="px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 text-xs font-medium transition">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Showcase Hero Card -->
+    <div class="bg-zinc-900/70 border border-zinc-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-md">
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Left: High-Res Artwork Column -->
+            <div class="w-full md:w-64 flex-shrink-0">
+                <div class="aspect-[2/3] w-full rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 shadow-2xl relative group">
+                    {% if entry.display_cover %}
+                    <img src="{{ entry.display_cover }}" alt="{{ entry.title }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full flex flex-col items-center justify-center text-zinc-600 p-4 text-center">
+                        <svg class="w-12 h-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span class="text-xs text-zinc-500">No cover art provided</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Status Pill Overlay -->
+                    <div class="absolute top-3 left-3">
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md {% if entry.status == 'READING' %}bg-rose-950/90 text-rose-300 border border-rose-700/60{% elif entry.status == 'COMPLETED' %}bg-emerald-950/90 text-emerald-300 border border-emerald-700/60{% elif entry.status == 'PLAN_TO_READ' %}bg-blue-950/90 text-blue-300 border border-blue-700/60{% else %}bg-zinc-900/90 text-zinc-400 border border-zinc-700/60{% endif %}">
+                            {{ entry.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Quick Progress Steppers (Under Poster on Mobile/Desktop) -->
+                <div class="mt-4 p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/80 space-y-3">
+                    <div class="flex items-center justify-between text-xs font-semibold text-zinc-300">
+                        <span>Reading Progress</span>
+                        <span>{{ entry.progress_percentage }}%</span>
+                    </div>
+
+                    <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                        <div class="bg-rose-500 h-2 rounded-full transition-all duration-300" style="width: {{ entry.progress_percentage }}%;"></div>
+                    </div>
+
+                    <div class="text-center text-xs font-mono text-zinc-400">
+                        {{ entry.progress_display }}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <form action="{% url 'comic_update_progress' entry.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="delta_chapter" value="1">
+                            <button type="submit" class="w-full py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-medium transition flex items-center justify-center gap-1">
+                                <span>+1 Ch</span>
+                            </button>
+                        </form>
+                        <form action="{% url 'comic_update_progress' entry.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="delta_volume" value="1">
+                            <button type="submit" class="w-full py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-medium transition flex items-center justify-center gap-1">
+                                <span>+1 Vol</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Metadata & Editorial Information -->
+            <div class="flex-1 flex flex-col justify-between space-y-6">
+                <div>
+                    <!-- Badges Row -->
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                        <span class="px-2.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wider {% if entry.item_type == 'COMIC' %}bg-amber-950/80 text-amber-300 border border-amber-800/60{% elif entry.item_type == 'LIGHT_NOVEL' %}bg-purple-950/80 text-purple-300 border border-purple-800/60{% else %}bg-rose-950/80 text-rose-300 border border-rose-800/60{% endif %}">
+                            {{ entry.get_item_type_display }}
+                        </span>
+                        {% if entry.start_year %}
+                        <span class="text-xs text-zinc-500 font-medium">Published {{ entry.start_year }}</span>
+                        {% endif %}
+                        {% if entry.publisher %}
+                        <span class="text-xs text-zinc-400 font-medium">• {{ entry.publisher }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Main Titles -->
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                        {{ entry.title }}
+                    </h1>
+                    {% if entry.original_title and entry.original_title != entry.title %}
+                    <p class="text-sm text-zinc-400 font-sans mt-0.5">{{ entry.original_title }}</p>
+                    {% endif %}
+
+                    <!-- Creative Team Credits -->
+                    <div class="mt-4 flex flex-wrap gap-4 text-xs">
+                        {% if entry.creator_author %}
+                        <div class="bg-zinc-950/40 border border-zinc-800/60 px-3 py-1.5 rounded-lg">
+                            <span class="text-zinc-500 block text-[10px] uppercase font-semibold">Story / Mangaka</span>
+                            <span class="text-zinc-200 font-medium">{{ entry.creator_author }}</span>
+                        </div>
+                        {% endif %}
+                        {% if entry.artist %}
+                        <div class="bg-zinc-950/40 border border-zinc-800/60 px-3 py-1.5 rounded-lg">
+                            <span class="text-zinc-500 block text-[10px] uppercase font-semibold">Art / Illustration</span>
+                            <span class="text-zinc-200 font-medium">{{ entry.artist }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Scores & Ratings Grid -->
+                    <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <!-- Overall Rating -->
+                        <div class="p-3.5 rounded-xl bg-zinc-950/50 border border-zinc-800/80">
+                            <div class="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Overall Story Score</div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-amber-400 text-lg">★</span>
+                                <span class="text-xl font-bold text-white">
+                                    {% if entry.rating %}{{ entry.rating }}{% else %}<span class="text-zinc-600 text-sm font-normal">Unrated</span>{% endif %}
+                                </span>
+                                {% if entry.rating %}<span class="text-xs text-zinc-500">/ 10</span>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Art & Linework Score -->
+                        <div class="p-3.5 rounded-xl bg-zinc-950/50 border border-zinc-800/80">
+                            <div class="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Art & Linework Quality</div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-rose-400 text-lg">🎨</span>
+                                <span class="text-xl font-bold text-white">
+                                    {% if entry.art_rating %}{{ entry.art_rating }}{% else %}<span class="text-zinc-600 text-sm font-normal">Unrated</span>{% endif %}
+                                </span>
+                                {% if entry.art_rating %}<span class="text-xs text-zinc-500">/ 10</span>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Reread / Revisit Count -->
+                        <div class="p-3.5 rounded-xl bg-zinc-950/50 border border-zinc-800/80 col-span-2 sm:col-span-1">
+                            <div class="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">Reread Count</div>
+                            <div class="text-xl font-bold text-white">
+                                {{ entry.reread_count }} <span class="text-xs font-normal text-zinc-500">times</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dates & Timeline -->
+                    <div class="mt-4 flex flex-wrap gap-4 text-xs text-zinc-400">
+                        {% if entry.start_date %}
+                        <span>Started: <strong class="text-zinc-200">{{ entry.start_date|date:"M d, Y" }}</strong></span>
+                        {% endif %}
+                        {% if entry.finish_date %}
+                        <span>Finished: <strong class="text-zinc-200">{{ entry.finish_date|date:"M d, Y" }}</strong></span>
+                        {% endif %}
+                        {% if entry.favorite_arc_or_issue %}
+                        <span>Favorite Arc: <strong class="text-rose-400">{{ entry.favorite_arc_or_issue }}</strong></span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description / Synopsis -->
+                    {% if entry.description %}
+                    <div class="mt-6 pt-5 border-t border-zinc-800/60">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Synopsis</h3>
+                        <p class="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">{{ entry.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Review & Reflections -->
+                    {% if entry.review %}
+                    <div class="mt-6 pt-5 border-t border-zinc-800/60">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Personal Review & Takeaway</h3>
+                        <div class="p-4 rounded-xl bg-zinc-950/40 border border-zinc-800/60 text-sm text-zinc-200 italic leading-relaxed">
+                            "{{ entry.review }}"
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Private Notes -->
+                    {% if entry.notes %}
+                    <div class="mt-4 pt-4 border-t border-zinc-800/60">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">Private Notes</h3>
+                        <p class="text-xs text-zinc-400 whitespace-pre-line">{{ entry.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Edit Comic/Manga Entry Details -->
+<div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+            <h3 class="text-base font-bold text-white">Edit Tracking Details: {{ entry.title }}</h3>
+            <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form action="{% url 'comic_update_details' entry.id %}" method="POST" enctype="multipart/form-data" class="p-6 overflow-y-auto space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Title *</label>
+                <input type="text" name="title" value="{{ entry.title }}" required
+                       class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Original Title</label>
+                    <input type="text" name="original_title" value="{{ entry.original_title }}"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Type</label>
+                    <select name="item_type" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                        {% for val, label in type_choices %}
+                        <option value="{{ val }}" {% if val == entry.item_type %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Writer / Mangaka</label>
+                    <input type="text" name="creator_author" value="{{ entry.creator_author }}"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Artist / Illustrator</label>
+                    <input type="text" name="artist" value="{{ entry.artist }}"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Current Chapter</label>
+                    <input type="number" name="current_chapter" value="{{ entry.current_chapter }}" min="0"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Total Chapters</label>
+                    <input type="number" name="total_chapters" value="{{ entry.total_chapters }}" min="0"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Current Volume</label>
+                    <input type="number" name="current_volume" value="{{ entry.current_volume }}" min="0"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Total Volumes</label>
+                    <input type="number" name="total_volumes" value="{{ entry.total_volumes }}" min="0"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Status</label>
+                    <select name="status" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                        {% for val, label in status_choices %}
+                        <option value="{{ val }}" {% if val == entry.status %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Story Rating (1-10)</label>
+                    <input type="number" step="0.1" min="1" max="10" name="rating" value="{{ entry.rating|default_if_none:'' }}" placeholder="e.g. 9.5"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Art Rating (1-10)</label>
+                    <input type="number" step="0.1" min="1" max="10" name="art_rating" value="{{ entry.art_rating|default_if_none:'' }}" placeholder="e.g. 10.0"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+            </div>
+
+            <!-- Native Clickable Date Dialogs -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Start Date</label>
+                    <input type="date" name="start_date" value="{{ entry.start_date|date:'Y-m-d'|default_if_none:'' }}"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Finish Date</label>
+                    <input type="date" name="finish_date" value="{{ entry.finish_date|date:'Y-m-d'|default_if_none:'' }}"
+                           class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Favorite Arc or Issue</label>
+                <input type="text" name="favorite_arc_or_issue" value="{{ entry.favorite_arc_or_issue }}" placeholder="e.g. Golden Age Arc, The Night Gwen Stacy Died"
+                       class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Review & Reflections</label>
+                <textarea name="review" rows="3" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">{{ entry.review }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Private Notes</label>
+                <textarea name="notes" rows="2" class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-rose-500">{{ entry.notes }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-300 mb-1">Upload New Custom Cover</label>
+                <input type="file" name="custom_cover" accept="image/*"
+                       class="w-full px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-zinc-400 file:mr-3 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700">
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+                <button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')"
+                        class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-sm transition">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
