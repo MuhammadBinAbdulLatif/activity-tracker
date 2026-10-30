@@ -112,14 +112,33 @@ class ComicMangaEntry(models.Model):
         return 0
 
     @property
-    def progress_display(self) -> str:
-        """Formatted string indicating current reading progress."""
+    def chapter_progress_display(self) -> str:
+        """Formatted string for chapter progress: 'Ch. 5 / 12' or 'Ch. 5'."""
         if self.total_chapters > 0:
             return f"Ch. {self.current_chapter} / {self.total_chapters}"
-        elif self.total_volumes > 0:
-            return f"Vol. {self.current_volume} / {self.total_volumes}"
         elif self.current_chapter > 0:
             return f"Ch. {self.current_chapter}"
+        return "Ch. 0"
+
+    @property
+    def volume_progress_display(self) -> str:
+        """Formatted string for volume progress: 'Vol. 1 / 1' or 'Vol. 1'."""
+        if self.total_volumes > 0:
+            return f"Vol. {self.current_volume} / {self.total_volumes}"
         elif self.current_volume > 0:
             return f"Vol. {self.current_volume}"
+        return "Vol. 0"
+
+    @property
+    def progress_display(self) -> str:
+        """Combined formatted string showing both chapter and volume progress clearly."""
+        has_chap = self.total_chapters > 0 or self.current_chapter > 0
+        has_vol = self.total_volumes > 0 or self.current_volume > 0
+
+        if has_chap and has_vol:
+            return f"{self.chapter_progress_display} • {self.volume_progress_display}"
+        elif has_chap:
+            return self.chapter_progress_display
+        elif has_vol:
+            return self.volume_progress_display
         return "Not Started"

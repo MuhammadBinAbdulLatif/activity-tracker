@@ -100,24 +100,27 @@
                 </div>
 
                 <!-- Reading Progress & Stepper -->
-                <div class="mt-4 pt-3 border-t border-zinc-800/60">
-                    <div class="flex items-center justify-between text-xs text-zinc-400 mb-1.5 font-medium">
-                        <span>{{ item.progress_display }}</span>
-                        <span>{{ item.progress_percentage }}%</span>
+                <div class="mt-4 pt-3 border-t border-zinc-800/60 space-y-2.5">
+                    <!-- Progress Stats -->
+                    <div class="flex items-center justify-between text-xs font-medium text-zinc-300">
+                        <span class="text-rose-400 font-semibold">{{ item.chapter_progress_display }}</span>
+                        <span class="text-amber-400 font-semibold">{{ item.volume_progress_display }}</span>
                     </div>
 
-                    <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden mb-3">
+                    <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
                         <div class="bg-rose-500 h-1.5 rounded-full transition-all duration-300" style="width: {{ item.progress_percentage }}%;"></div>
                     </div>
 
-                    <!-- Quick Increment Steppers -->
-                    <div class="grid grid-cols-2 gap-2">
+                    <!-- Quick Increment Steppers with Volume & Chapter context -->
+                    <div class="grid grid-cols-2 gap-2 pt-0.5">
                         <!-- Chapter Stepper -->
                         <form action="{% url 'comic_update_progress' item.id %}" method="POST" class="inline">
                             {% csrf_token %}
                             <input type="hidden" name="delta_chapter" value="1">
-                            <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition flex items-center justify-center gap-1">
+                            <input type="hidden" name="next" value="{% url 'comic_list' %}">
+                            <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition flex items-center justify-center gap-1 cursor-pointer" title="Increment Chapter">
                                 <span>+1 Ch</span>
+                                <span class="text-[10px] text-zinc-400">({{ item.current_chapter }}{% if item.total_chapters %}/{{ item.total_chapters }}{% endif %})</span>
                             </button>
                         </form>
 
@@ -125,8 +128,10 @@
                         <form action="{% url 'comic_update_progress' item.id %}" method="POST" class="inline">
                             {% csrf_token %}
                             <input type="hidden" name="delta_volume" value="1">
-                            <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition flex items-center justify-center gap-1">
+                            <input type="hidden" name="next" value="{% url 'comic_list' %}">
+                            <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition flex items-center justify-center gap-1 cursor-pointer" title="Increment Volume">
                                 <span>+1 Vol</span>
+                                <span class="text-[10px] text-amber-400/80">({{ item.current_volume }}{% if item.total_volumes %}/{{ item.total_volumes }}{% endif %})</span>
                             </button>
                         </form>
                     </div>

@@ -245,7 +245,8 @@ def update_comic_progress_view(request, id):
 
         entry.save()
 
-        return redirect("comic_detail", id=entry.id)
+        next_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or redirect("comic_detail", id=entry.id).url
+        return redirect(next_url)
 
     return redirect("comic_detail", id=entry.id)
 
