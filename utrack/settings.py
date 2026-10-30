@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "dashboard",
     "movies",
     "series",
+    "books",
     "storages",
 ]
 

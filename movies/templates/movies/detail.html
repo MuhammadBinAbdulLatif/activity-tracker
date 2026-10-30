@@ -231,7 +231,8 @@
                     <div>
                         <label class="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Watch Date</label>
                         <input type="date" name="watch_date" value="{{ movie.watch_date|date:'Y-m-d'|default:'' }}"
-                               class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                               onclick="if(this.showPicker) this.showPicker()"
+                               class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 cursor-pointer">
                     </div>
 
                     <!-- Rewatch Count -->

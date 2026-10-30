@@ -286,3 +286,26 @@ class SeriesTrackingAndEngineTests(TestCase):
         res = self.client.get(reverse("series_list"))
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, reverse("series_detail", args=[series.id]))
+
+    @patch("services.tmdb.tmdb_service.search_series")
+    def test_search_series_excludes_dropped_and_deleted(self, mock_search):
+        mock_search.return_value = {
+            "results": [
+                {"id": 401, "name": "Active Show", "first_air_date": "2024-01-01"},
+                {"id": 402, "name": "Dropped Show", "first_air_date": "2024-01-01"},
+                {"id": 403, "name": "Deleted Show", "first_air_date": "2024-01-01"},
+            ]
+        }
+        # 401 is actively watched
+        SeriesEntry.objects.create(user=self.user, tmdb_id=401, title="Active Show", user_status=SeriesUserStatus.WATCHING)
+        # 402 is dropped
+        SeriesEntry.objects.create(user=self.user, tmdb_id=402, title="Dropped Show", user_status=SeriesUserStatus.DROPPED)
+        # 403 is deleted or never tracked
+
+        res = self.client.get(reverse("series_search") + "?q=Show")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()["results"]
+        result_map = {item["tmdb_id"]: item["is_tracked"] for item in data}
+        self.assertTrue(result_map[401])
+        self.assertFalse(result_map[402])
+        self.assertFalse(result_map[403])

@@ -49,6 +49,20 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #3f3f46;
         }
+        /* Date input dialog styling */
+        input[type="date"] {
+            color-scheme: dark;
+            cursor: pointer;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 4px;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body class="bg-[#09090b] text-zinc-100 min-h-screen selection:bg-zinc-800 selection:text-zinc-100 flex overflow-x-hidden">
@@ -108,7 +122,7 @@
         </main>
     </div>
 
-    <!-- Script to toggle mobile sidebar -->
+    <!-- Script to toggle mobile sidebar & open native date picker on date inputs -->
     <script>
         const mobileToggle = document.getElementById('mobile-menu-toggle');
         const sidebar = document.getElementById('app-sidebar');
@@ -117,6 +131,19 @@
                 sidebar.classList.toggle('-translate-x-full');
             });
         }
+
+        // Global date picker trigger: clicking anywhere on a date input invokes the date dialog
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'date') {
+                if (typeof e.target.showPicker === 'function') {
+                    try {
+                        e.target.showPicker();
+                    } catch (err) {
+                        // ignore if browser blocks invocation
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>

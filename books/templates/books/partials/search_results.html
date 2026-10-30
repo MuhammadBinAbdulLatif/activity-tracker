@@ -1,0 +1,61 @@
+{% if results %}
+<div class="space-y-3">
+    {% for item in results %}
+    <div class="flex items-center gap-4 p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 hover:border-emerald-500/50 hover:bg-zinc-800/40 transition-all duration-200">
+        <div class="w-12 h-16 rounded-md overflow-hidden bg-zinc-950 flex-shrink-0 border border-zinc-800">
+            {% if item.cover_url %}
+            <img src="{{ item.cover_url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+            {% else %}
+            <div class="w-full h-full flex items-center justify-center text-zinc-600">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            {% endif %}
+        </div>
+        <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-semibold text-zinc-100 truncate">{{ item.title }}</h4>
+            <p class="text-xs text-zinc-400 truncate">{{ item.author }}</p>
+            <div class="flex items-center gap-3 mt-1.5 text-[11px] text-zinc-500">
+                {% if item.publish_year %}<span>{{ item.publish_year }}</span>{% endif %}
+                {% if item.page_count %}<span>• {{ item.page_count }} pages</span>{% endif %}
+                {% if item.genres %}<span class="truncate max-w-[150px] text-emerald-400/80">• {{ item.genres }}</span>{% endif %}
+            </div>
+        </div>
+        <div>
+            {% if item.is_tracked %}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Tracked
+            </span>
+            {% else %}
+            <form method="POST" action="{% url 'add_book' %}" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="openlibrary_key" value="{{ item.openlibrary_key }}">
+                <input type="hidden" name="title" value="{{ item.title }}">
+                <input type="hidden" name="author" value="{{ item.author }}">
+                <input type="hidden" name="publish_year" value="{{ item.publish_year }}">
+                <input type="hidden" name="page_count" value="{{ item.page_count }}">
+                <input type="hidden" name="cover_url" value="{{ item.cover_url }}">
+                <input type="hidden" name="isbn" value="{{ item.isbn }}">
+                <input type="hidden" name="genres" value="{{ item.genres }}">
+                <input type="hidden" name="status" value="PLAN_TO_READ">
+                <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors shadow-sm shadow-emerald-950">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Track
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="py-8 text-center text-zinc-500 text-xs">
+    No books found. Try searching by title, author name, or ISBN.
+</div>
+{% endif %}

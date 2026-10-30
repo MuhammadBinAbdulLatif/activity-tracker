@@ -8,6 +8,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('movies/', include('movies.urls')),
     path('series/', include('series.urls')),
+    path('books/', include('books.urls')),
     path('', include('dashboard.urls')),
 ]
 

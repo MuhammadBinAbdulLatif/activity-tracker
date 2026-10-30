@@ -401,7 +401,8 @@
                         <div>
                             <label class="block text-[11px] font-semibold text-zinc-400 mb-1">First Air Date</label>
                             <input type="date" name="first_air_date" value="{{ series.first_air_date|date:'Y-m-d' }}"
-                                   class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-indigo-500">
+                                   onclick="if(this.showPicker) this.showPicker()"
+                                   class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer">
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Actors / Cast (comma-separated)</label>

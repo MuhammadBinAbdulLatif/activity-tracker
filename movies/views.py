@@ -41,9 +41,10 @@ def search_movies_view(request):
     data = tmdb_service.search_movies(query)
     results = data.get("results", [])[:8] # Top 8 results
     
-    # Check if user already tracks these items
+    # Check if user already tracks these items (excluding dropped items)
     tracked_tmdb_ids = set(
         MovieEntry.objects.filter(user=request.user, tmdb_id__isnull=False)
+        .exclude(status=MovieStatus.DROPPED)
         .values_list("tmdb_id", flat=True)
     )
 

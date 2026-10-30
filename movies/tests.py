@@ -168,3 +168,26 @@ class MovieTrackingTests(TestCase):
         self.assertEqual(res.status_code, 200)
         detail_url = reverse("movie_detail", args=[movie.id])
         self.assertContains(res, f'href="{detail_url}"')
+
+    @patch("services.tmdb.tmdb_service.search_movies")
+    def test_search_movies_excludes_dropped_and_deleted(self, mock_search):
+        mock_search.return_value = {
+            "results": [
+                {"id": 100, "title": "Active Film", "release_date": "2024-01-01"},
+                {"id": 200, "title": "Dropped Film", "release_date": "2024-01-01"},
+                {"id": 300, "title": "Deleted Film", "release_date": "2024-01-01"},
+            ]
+        }
+        # 100 is actively tracked
+        MovieEntry.objects.create(user=self.user, tmdb_id=100, title="Active Film", status=MovieStatus.COMPLETED)
+        # 200 is dropped
+        MovieEntry.objects.create(user=self.user, tmdb_id=200, title="Dropped Film", status=MovieStatus.DROPPED)
+        # 300 is not in DB (or deleted)
+
+        res = self.client.get(reverse("movie_search") + "?q=Film")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()["results"]
+        result_map = {item["tmdb_id"]: item["is_tracked"] for item in data}
+        self.assertTrue(result_map[100])
+        self.assertFalse(result_map[200])
+        self.assertFalse(result_map[300])

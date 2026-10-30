@@ -45,6 +45,7 @@ def search_series_view(request):
 
     tracked_tmdb_ids = set(
         SeriesEntry.objects.filter(user=request.user, tmdb_id__isnull=False)
+        .exclude(user_status=SeriesUserStatus.DROPPED)
         .values_list("tmdb_id", flat=True)
     )
 
