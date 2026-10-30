@@ -207,23 +207,35 @@ def update_comic_progress_view(request, id):
 
         if delta_chapter is not None:
             try:
-                entry.current_chapter = max(0, entry.current_chapter + int(delta_chapter))
+                new_chap = entry.current_chapter + int(delta_chapter)
+                if entry.total_chapters > 0:
+                    new_chap = min(entry.total_chapters, new_chap)
+                entry.current_chapter = max(0, new_chap)
             except ValueError:
                 pass
         elif set_chapter is not None:
             try:
-                entry.current_chapter = max(0, int(set_chapter))
+                new_chap = int(set_chapter)
+                if entry.total_chapters > 0:
+                    new_chap = min(entry.total_chapters, new_chap)
+                entry.current_chapter = max(0, new_chap)
             except ValueError:
                 pass
 
         if delta_volume is not None:
             try:
-                entry.current_volume = max(0, entry.current_volume + int(delta_volume))
+                new_vol = entry.current_volume + int(delta_volume)
+                if entry.total_volumes > 0:
+                    new_vol = min(entry.total_volumes, new_vol)
+                entry.current_volume = max(0, new_vol)
             except ValueError:
                 pass
         elif set_volume is not None:
             try:
-                entry.current_volume = max(0, int(set_volume))
+                new_vol = int(set_volume)
+                if entry.total_volumes > 0:
+                    new_vol = min(entry.total_volumes, new_vol)
+                entry.current_volume = max(0, new_vol)
             except ValueError:
                 pass
 
@@ -233,12 +245,14 @@ def update_comic_progress_view(request, id):
             if not entry.start_date:
                 entry.start_date = timezone.now().date()
 
-        # Check for auto-completion
+        # Check for auto-completion (either chapters reached or volumes reached)
+        is_completed = False
         if entry.total_chapters > 0 and entry.current_chapter >= entry.total_chapters:
-            entry.status = ComicMangaStatus.COMPLETED
-            if not entry.finish_date:
-                entry.finish_date = timezone.now().date()
-        elif entry.total_volumes > 0 and entry.current_volume >= entry.total_volumes and entry.total_chapters == 0:
+            is_completed = True
+        elif entry.total_volumes > 0 and entry.current_volume >= entry.total_volumes:
+            is_completed = True
+
+        if is_completed:
             entry.status = ComicMangaStatus.COMPLETED
             if not entry.finish_date:
                 entry.finish_date = timezone.now().date()
