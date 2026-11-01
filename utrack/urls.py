@@ -11,6 +11,7 @@ urlpatterns = [
     path('books/', include('books.urls')),
     path('audiobooks/', include('audiobooks.urls')),
     path('comics/', include('comics.urls')),
+    path('games/', include('games.urls')),
     path('', include('dashboard.urls')),
 ]
 
