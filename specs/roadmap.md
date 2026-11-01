@@ -88,11 +88,13 @@ Transition the dashboard from demo data to persisted user logs with dual entry p
 - User inputs: issues/chapters read, date consumed, rating, notes.
 - Manual creation fallback.
 
-### Step 5.5: Video Games
-- Search IGDB / RAWG by title/platform.
-- Auto-fill: box cover art, release year, developers/publishers, platforms (PC, PS5, Xbox, Switch), genres.
-- User inputs: play status (Playing, Completed, Dropped, Backlog), hours played, completion percentage, personal rating, review, platform played on.
+### Step 5.5: Video Games [COMPLETED]
+- **Status:** Complete & Verified
+- Search RAWG (primary) / IGDB (fallback OAuth2) by title.
+- Auto-fill: cover art, release year, developers/publishers, platforms, genres.
+- User inputs: play status (Playing, Completed, Dropped, On Hold, Backlog), hours played, completion %, personal rating, review, platform played on.
 - Manual creation fallback.
+- 31/31 automated tests passing (102/102 across entire suite).
 
 ### Step 5.6: Board Games & Tabletop
 - Search BoardGameGeek (BGG) XML API2 by title.
