@@ -6,222 +6,383 @@
 {% block content %}
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- Back Link -->
-    <a href="{% url 'game_list' %}" class="inline-flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-200 transition-colors">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <!-- Back Navigation Link -->
+    <a href="{% url 'game_list' %}" class="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors">
+        <svg class="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
-        Back to Games
+        Back to Games Chronicle
     </a>
 
-    <!-- Hero Banner -->
-    <div class="relative rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800/80 min-h-[220px]">
-        <!-- Blurred Background -->
+    <!-- ============================================================
+         HERO BANNER — Deep atmospheric backdrop with movie/comic parity
+         ============================================================ -->
+    <div class="relative rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800/80 min-h-[220px] shadow-2xl">
+        <!-- Blurred background cover art -->
         {% if entry.display_cover %}
         <div class="absolute inset-0">
             <img src="{{ entry.display_cover }}" alt="" class="w-full h-full object-cover opacity-20 blur-md scale-110">
-            <div class="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/80 to-zinc-950/40"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-zinc-950/40"></div>
         </div>
         {% endif %}
 
-        <!-- Content -->
+        <!-- Foreground layout -->
         <div class="relative flex flex-col sm:flex-row items-start gap-6 p-6">
-            <!-- Cover Card -->
-            <div class="flex-shrink-0 w-36 aspect-video rounded-xl overflow-hidden bg-zinc-900 border border-zinc-700/60 shadow-2xl">
+            <!-- Cover card with edit affordance -->
+            <button onclick="document.getElementById('edit-modal').classList.remove('hidden')"
+                    class="flex-shrink-0 group/cover relative w-32 sm:w-36 aspect-[3/4] rounded-xl overflow-hidden bg-zinc-900 border border-zinc-700/60 shadow-2xl hover:border-cyan-500 transition-colors cursor-pointer"
+                    title="Click to edit details or update cover art">
                 {% if entry.display_cover %}
                 <img src="{{ entry.display_cover }}" alt="{{ entry.title }}" class="w-full h-full object-cover">
                 {% else %}
-                <div class="w-full h-full flex items-center justify-center text-zinc-600">
-                    <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <div class="w-full h-full flex flex-col items-center justify-center text-zinc-600 gap-1.5 p-2 text-center">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
                     </svg>
+                    <span class="text-[10px] text-zinc-600 font-medium">No cover art</span>
                 </div>
                 {% endif %}
-            </div>
+                <!-- Hover edit badge -->
+                <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/cover:opacity-100 transition-opacity">
+                    <span class="text-xs font-bold text-white flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Edit
+                    </span>
+                </div>
+            </button>
 
-            <!-- Game Info -->
+            <!-- Game information -->
             <div class="flex-1 min-w-0 space-y-3">
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white leading-tight">{{ entry.title }}</h1>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">{{ entry.title }}</h1>
                     <div class="flex flex-wrap items-center gap-2 mt-2">
                         <!-- Status badge -->
-                        <span class="text-xs px-2.5 py-1 rounded-lg font-semibold {{ entry.status_badge_class }}">
+                        <span class="text-xs px-2.5 py-1 rounded-lg font-bold {{ entry.status_badge_class }}">
                             {{ entry.get_status_display }}
                         </span>
-                        <!-- Platform badge -->
                         {% if entry.platform_played %}
                         <span class="text-xs px-2.5 py-1 rounded-lg bg-cyan-950/60 text-cyan-400 border border-cyan-800/50 font-medium">
                             🎮 {{ entry.platform_played }}
                         </span>
                         {% endif %}
                         {% if entry.release_year %}
-                        <span class="text-xs text-zinc-500">{{ entry.release_year }}</span>
+                        <span class="text-xs font-mono text-zinc-400 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800">{{ entry.release_year }}</span>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Developer / Publisher -->
                 {% if entry.developers or entry.publishers %}
                 <div class="text-xs text-zinc-400 space-y-0.5">
-                    {% if entry.developers %}<div><span class="text-zinc-600">Dev:</span> {{ entry.developers }}</div>{% endif %}
-                    {% if entry.publishers %}<div><span class="text-zinc-600">Pub:</span> {{ entry.publishers }}</div>{% endif %}
+                    {% if entry.developers %}<div><span class="text-zinc-600 font-semibold uppercase tracking-wider text-[10px]">Studio:</span> {{ entry.developers }}</div>{% endif %}
+                    {% if entry.publishers %}<div><span class="text-zinc-600 font-semibold uppercase tracking-wider text-[10px]">Publisher:</span> {{ entry.publishers }}</div>{% endif %}
                 </div>
                 {% endif %}
 
-                <!-- Genres -->
                 {% if entry.genres %}
-                <div class="flex flex-wrap gap-1.5">
-                    <span class="text-[11px] px-2 py-0.5 rounded bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">{{ entry.genres }}</span>
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                    <span class="text-[11px] px-2.5 py-0.5 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300">{{ entry.genres }}</span>
                 </div>
                 {% endif %}
 
-                <!-- Stats Row -->
-                <div class="flex flex-wrap gap-6 pt-1">
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-cyan-400">{{ entry.hours_display }}</div>
-                        <div class="text-[10px] text-zinc-600 uppercase tracking-wide">Played</div>
+                <!-- Core Metrics Row -->
+                <div class="flex flex-wrap gap-6 pt-2 border-t border-zinc-900">
+                    <div>
+                        <div class="text-xl font-black text-cyan-400 font-mono">{{ entry.hours_display }}</div>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Playtime</div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-emerald-400">{{ entry.completion_display }}</div>
-                        <div class="text-[10px] text-zinc-600 uppercase tracking-wide">Complete</div>
+                    <div>
+                        <div class="text-xl font-black text-emerald-400 font-mono">{{ entry.completion_display }}</div>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Completed</div>
                     </div>
                     {% if entry.rating %}
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-amber-400">★ {{ entry.rating }}</div>
-                        <div class="text-[10px] text-zinc-600 uppercase tracking-wide">Rating</div>
+                    <div>
+                        <div class="text-xl font-black text-amber-400 font-mono">★ {{ entry.rating }}</div>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">User Rating</div>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Edit / Delete Actions -->
-            <div class="flex items-center gap-2 sm:self-start flex-shrink-0">
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2 sm:self-start shrink-0">
                 <button onclick="document.getElementById('edit-modal').classList.remove('hidden')"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition-colors border border-zinc-700/60">
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-semibold transition border border-zinc-800 cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
-                    Edit
+                    <span>Edit</span>
                 </button>
-                <form method="POST" action="{% url 'delete_game' entry.pk %}" onsubmit="return confirm('Delete {{ entry.title }}? This cannot be undone.')">
+                <form method="POST" action="{% url 'delete_game' entry.pk %}"
+                      onsubmit="return confirm('Remove {{ entry.title }} from your game chronicle? This action cannot be reversed.')">
                     {% csrf_token %}
-                    <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/50 text-red-400 text-xs font-medium transition-colors border border-red-800/40">
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-400 text-xs font-semibold transition border border-red-800/40 cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
-                        Delete
+                        <span>Delete</span>
                     </button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Completion Progress Bar -->
-    <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4 space-y-2">
-        <div class="flex justify-between text-xs text-zinc-400">
-            <span>Completion Progress</span>
-            <span class="font-semibold text-emerald-400">{{ entry.completion_display }}</span>
+    <!-- ============================================================
+         QUICK LOGGING DASHBOARD (Prominent Two-Button Stepper: -30m / +30m)
+         ============================================================ -->
+    <div class="p-6 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-xl space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-zinc-900">
+            <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-white">Daily Playtime & Progress</h2>
+                    <p class="text-xs text-zinc-400">Keep your game session up to date with one-click adjustments.</p>
+                </div>
+            </div>
+            <span class="text-xs font-mono font-bold text-cyan-400 px-3 py-1 rounded-md bg-zinc-900 border border-zinc-800">
+                {{ entry.hours_display }} logged
+            </span>
         </div>
-        <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
-            <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ entry.completion_percentage }}%;"></div>
+
+        <!-- Progress bar with live indicator -->
+        <div class="space-y-2">
+            <div class="flex justify-between items-center text-xs">
+                <span class="text-zinc-400 font-medium">Campaign Progress</span>
+                <span class="font-bold text-emerald-400">{{ entry.completion_display }}</span>
+            </div>
+            <div class="w-full bg-zinc-900 rounded-full h-2.5 overflow-hidden border border-zinc-800">
+                <div class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: {{ entry.completion_percentage }}%;"></div>
+            </div>
+            <div class="flex justify-between text-[11px] text-zinc-500">
+                <span>0%</span>
+                {% if entry.start_date %}<span>Started {{ entry.start_date|date:"M d, Y" }}</span>{% endif %}
+                {% if entry.finish_date %}<span>Finished {{ entry.finish_date|date:"M d, Y" }}</span>{% endif %}
+                <span>100%</span>
+            </div>
         </div>
-        <div class="flex justify-between text-[11px] text-zinc-600">
-            <span>{{ entry.hours_display }} logged</span>
-            {% if entry.start_date %}<span>Started {{ entry.start_date }}</span>{% endif %}
-            {% if entry.finish_date %}<span>Finished {{ entry.finish_date }}</span>{% endif %}
+
+        <!-- Playtime Quick Buttons: -30m / +30m Stepper -->
+        <div class="space-y-3">
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">Log Gameplay Session</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
+                <!-- Subtract 30m -->
+                <form action="{% url 'quick_update_game' entry.pk %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="delta_hours" value="-0.5">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" {% if entry.hours_played <= 0 %}disabled{% endif %}
+                            class="w-full py-3 px-4 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 {% if entry.hours_played <= 0 %}bg-zinc-900 text-zinc-600 border border-zinc-800/40 cursor-not-allowed opacity-50{% else %}bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 active:scale-95 cursor-pointer shadow-sm{% endif %}"
+                            title="Subtract 30 minutes from total">
+                        <svg class="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                        </svg>
+                        <span>-30 Minutes</span>
+                    </button>
+                </form>
+
+                <!-- Add 30m (Primary Action) -->
+                <form action="{% url 'quick_update_game' entry.pk %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="delta_hours" value="0.5">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit"
+                            class="w-full py-3 px-4 rounded-xl text-sm font-bold bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-zinc-950 transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer"
+                            title="Add 30 minutes of gameplay">
+                        <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>+30 Minutes</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Completion Stepper -->
+        <div class="space-y-3 pt-3 border-t border-zinc-900">
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">Campaign Milestone</span>
+            <div class="flex items-center gap-2 flex-wrap">
+                {% for pct in "25,50,75,100" %}
+                <form method="POST" action="{% url 'quick_update_game' entry.pk %}" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="set_completion" value="{{ pct }}">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit"
+                            class="text-xs px-4 py-2 rounded-xl font-bold transition cursor-pointer
+                            {% if entry.completion_percentage >= pct|add:'0' %}
+                                bg-emerald-500/25 text-emerald-300 border border-emerald-500/50
+                            {% else %}
+                                bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30
+                            {% endif %}">
+                        {{ pct }}% Complete
+                    </button>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Status Change Pills -->
+        <div class="space-y-3 pt-3 border-t border-zinc-900">
+            <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">Change Tracking Status</span>
+            <div class="flex items-center gap-2 flex-wrap">
+                {% for val, label in statuses.choices %}
+                <form method="POST" action="{% url 'quick_update_game' entry.pk %}" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="set_status" value="{{ val }}">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit"
+                            class="text-xs px-3.5 py-1.5 rounded-xl font-bold transition cursor-pointer
+                            {% if entry.status == val %}
+                                bg-white text-zinc-950 shadow-md
+                            {% else %}
+                                bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white
+                            {% endif %}">
+                        {{ label }}
+                    </button>
+                </form>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
-    <!-- Description -->
+    <!-- Description & Narrative -->
     {% if entry.description %}
-    <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-5">
-        <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">About</h3>
-        <p class="text-sm text-zinc-300 leading-relaxed">{{ entry.description|truncatewords:120 }}</p>
+    <div class="p-6 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md space-y-2">
+        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Game Synopsis</h3>
+        <p class="text-sm text-zinc-300 leading-relaxed">{{ entry.description }}</p>
     </div>
     {% endif %}
 
-    <!-- Review & Notes -->
+    <!-- Reviews and Notes -->
     {% if entry.review or entry.notes %}
-    <div class="grid sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {% if entry.review %}
-        <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-5">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">My Review</h3>
+        <div class="p-6 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md space-y-2">
+            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider">My Review</h3>
             <p class="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">{{ entry.review }}</p>
         </div>
         {% endif %}
+
         {% if entry.notes %}
-        <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-5">
-            <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">Notes</h3>
+        <div class="p-6 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md space-y-2">
+            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Private Notes</h3>
             <p class="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">{{ entry.notes }}</p>
         </div>
         {% endif %}
     </div>
     {% endif %}
 
-    <!-- Platform Info -->
+    <!-- Platform Hardware -->
     {% if entry.platforms_available %}
-    <div class="bg-zinc-900/40 border border-zinc-800/60 rounded-xl p-4">
-        <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Available Platforms</h3>
-        <p class="text-sm text-zinc-400">{{ entry.platforms_available }}</p>
+    <div class="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md space-y-2">
+        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider">Available Hardware & Systems</h3>
+        <p class="text-sm text-zinc-400 font-mono">{{ entry.platforms_available }}</p>
     </div>
     {% endif %}
 
 </div>
 
-<!-- =====================================================================
-     EDIT MODAL
-     ===================================================================== -->
-<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onclick="if(event.target===this)this.classList.add('hidden')">
-    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-800/80">
-            <h2 class="text-base font-bold text-zinc-100">Edit — {{ entry.title }}</h2>
-            <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="text-zinc-500 hover:text-zinc-200 transition-colors">
+<!-- =================================================================
+     EDIT MODAL — Rich modal with live custom cover picker preview
+     ================================================================= -->
+<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+     onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-800/80 flex-shrink-0">
+            <div>
+                <h2 class="text-base font-bold text-zinc-100">Edit Game Details</h2>
+                <p class="text-xs text-zinc-400 mt-0.5">{{ entry.title }}</p>
+            </div>
+            <button onclick="document.getElementById('edit-modal').classList.add('hidden')"
+                    class="text-zinc-500 hover:text-zinc-200 transition-colors p-1.5 rounded-lg hover:bg-zinc-800 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
 
-        <!-- Form -->
-        <div class="flex-1 overflow-y-auto px-5 py-5">
+        <!-- Scrollable Form Body -->
+        <div class="flex-1 overflow-y-auto px-6 py-5">
             <form method="POST" action="{% url 'update_game_details' entry.pk %}" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
-                <div class="p-3 text-xs rounded-lg border bg-red-950/40 border-red-800/60 text-red-300">
+                <div class="p-3 text-xs rounded-xl border bg-red-950/40 border-red-800/60 text-red-300">
                     {% for e in form.non_field_errors %}{{ e }}{% endfor %}
                 </div>
                 {% endif %}
 
+                <!-- Cover Image Upload Area with styled Preview Box -->
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Game Cover Art</label>
+                    <div class="flex items-start gap-4 p-3 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+                        <!-- Preview Box -->
+                        <div id="edit-cover-preview" class="w-24 h-32 flex-shrink-0 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-700 shadow-inner">
+                            {% if entry.display_cover %}
+                            <img src="{{ entry.display_cover }}" alt="Current cover" class="w-full h-full object-cover">
+                            {% else %}
+                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex-1 space-y-2">
+                            <label for="id_custom_cover_edit" class="block w-full cursor-pointer">
+                                <div class="flex flex-col items-center justify-center px-4 py-4 rounded-xl bg-zinc-900 border border-dashed border-zinc-700 hover:border-cyan-500 hover:bg-zinc-800/80 transition-colors text-center group">
+                                    <svg class="w-5 h-5 text-zinc-500 group-hover:text-cyan-400 transition-colors mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                    </svg>
+                                    <span class="text-xs text-zinc-300 font-semibold group-hover:text-white">Upload New Cover</span>
+                                    <span class="text-[10px] text-zinc-500 mt-0.5">PNG, JPG, WEBP (Max 5MB)</span>
+                                </div>
+                            </label>
+                            <input type="file" name="custom_cover" id="id_custom_cover_edit" accept="image/*" class="hidden"
+                                   onchange="previewCover(this, 'edit-cover-preview')">
+                            {% if entry.custom_cover %}
+                            <p class="text-[11px] text-cyan-400/90 font-medium">✓ Custom cover upload active</p>
+                            {% elif entry.cover_url %}
+                            <p class="text-[11px] text-zinc-500 font-medium">Cover synced from RAWG</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Title -->
                 <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1">Title</label>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Game Title</label>
                     {{ form.title }}
                     {% for e in form.title.errors %}<p class="text-xs text-red-400 mt-1">{{ e }}</p>{% endfor %}
                 </div>
 
-                <!-- Status / Platform -->
+                <!-- Status & Platform -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Status</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Tracking Status</label>
                         {{ form.status }}
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Platform Played</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Platform Played</label>
                         {{ form.platform_played }}
                     </div>
                 </div>
 
-                <!-- Hours / Completion -->
+                <!-- Hours & Completion -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Hours Played</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Hours Played</label>
                         {{ form.hours_played }}
                         {% for e in form.hours_played.errors %}<p class="text-xs text-red-400 mt-1">{{ e }}</p>{% endfor %}
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Completion %</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Completion %</label>
                         {{ form.completion_percentage }}
                         {% for e in form.completion_percentage.errors %}<p class="text-xs text-red-400 mt-1">{{ e }}</p>{% endfor %}
                     </div>
@@ -229,48 +390,56 @@
 
                 <!-- Rating -->
                 <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1">Personal Rating (1.0 – 10.0)</label>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Rating (1.0 – 10.0)</label>
                     {{ form.rating }}
                     {% for e in form.rating.errors %}<p class="text-xs text-red-400 mt-1">{{ e }}</p>{% endfor %}
                 </div>
 
-                <!-- Start / Finish Dates -->
+                <!-- Dates -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Start Date</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Start Date</label>
                         {{ form.start_date }}
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Finish Date</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Finish Date</label>
                         {{ form.finish_date }}
                     </div>
                 </div>
 
                 <!-- Review -->
                 <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1">Review</label>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">My Review</label>
                     {{ form.review }}
                 </div>
 
                 <!-- Notes -->
                 <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1">Notes</label>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Private Notes</label>
                     {{ form.notes }}
                 </div>
 
-                <!-- Custom Cover -->
-                <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1">Custom Cover Image</label>
-                    {{ form.custom_cover }}
-                </div>
-
                 <div class="pt-2">
-                    <button type="submit" class="w-full py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-sm rounded-lg shadow-sm transition-all">
-                        Save Changes
+                    <button type="submit" class="w-full py-2.5 px-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition-all cursor-pointer">
+                        Save Game Changes
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+function previewCover(input, previewId) {
+    const box = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            box.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover" alt="Cover preview">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+
 {% endblock %}

@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
+from decimal import Decimal, InvalidOperation
 
 from .models import GameEntry, GameStatus
 from .forms import GameEntryForm
@@ -192,3 +193,51 @@ def delete_game(request: HttpRequest, pk: int):
     entry = get_object_or_404(GameEntry, pk=pk, user=request.user)
     entry.delete()
     return redirect("game_list")
+
+
+# --------------------------------------------------------------------------- #
+# Quick Update — hours & completion inline (from list OR detail card)
+# --------------------------------------------------------------------------- #
+
+@login_required
+@require_POST
+def quick_update_game(request: HttpRequest, pk: int):
+    """
+    Lightweight endpoint for the quick-log controls on the list / detail cards.
+    Accepts:
+        delta_hours      — decimal hours to add/subtract (+0.5, -0.5, etc.)
+        add_hours        — (legacy/fallback) decimal hours to ADD
+        set_completion   — integer 0–100 to SET as completion %
+        set_status       — GameStatus value to switch status
+    Always redirects back to the referer (or game_list).
+    """
+    entry = get_object_or_404(GameEntry, pk=pk, user=request.user)
+    next_url = request.POST.get("next") or request.META.get("HTTP_REFERER") or "game_list"
+
+    # Support delta_hours (+0.5 or -0.5 for +30m / -30m) or add_hours
+    delta_str = request.POST.get("delta_hours", "").strip() or request.POST.get("add_hours", "").strip()
+    if delta_str:
+        try:
+            delta = Decimal(delta_str)
+            # Cannot drop below 0 hours
+            entry.hours_played = max(Decimal("0.0"), entry.hours_played + delta)
+        except InvalidOperation:
+            pass
+
+    set_completion = request.POST.get("set_completion", "").strip()
+    if set_completion:
+        try:
+            pct = int(set_completion)
+            entry.completion_percentage = max(0, min(100, pct))
+            # Auto-complete if 100% and currently playing
+            if entry.completion_percentage == 100 and entry.status == GameStatus.PLAYING:
+                entry.status = GameStatus.COMPLETED
+        except ValueError:
+            pass
+
+    set_status = request.POST.get("set_status", "").strip()
+    if set_status and set_status in GameStatus.values:
+        entry.status = set_status
+
+    entry.save(update_fields=["hours_played", "completion_percentage", "status", "updated_at"])
+    return redirect(next_url)

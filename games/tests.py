@@ -384,3 +384,190 @@ class GameViewTests(TestCase):
         response = self.client.post(reverse("delete_game", args=[other_game.pk]))
         self.assertEqual(response.status_code, 404)
         self.assertTrue(GameEntry.objects.filter(pk=other_game.pk).exists())
+
+
+# =========================================================================== #
+# Quick Update View Tests
+# =========================================================================== #
+
+class QuickUpdateGameViewTests(TestCase):
+    """Tests for the quick_update_game POST endpoint."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="quickgamer", password="password123")
+        self.other_user = User.objects.create_user(username="othergamer2", password="password123")
+        self.client = Client()
+        self.client.login(username="quickgamer", password="password123")
+        self.game = GameEntry.objects.create(
+            user=self.user,
+            title="Quick Test Game",
+            status=GameStatus.PLAYING,
+            hours_played=Decimal("5.0"),
+            completion_percentage=30,
+        )
+        self.url = reverse("quick_update_game", args=[self.game.pk])
+
+    def _post(self, data):
+        return self.client.post(self.url, data)
+
+    # --- add_hours ---
+
+    def test_add_hours_increases_hours_played(self):
+        response = self._post({"add_hours": "1.5"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("6.5"))
+
+    def test_add_hours_half_hour(self):
+        response = self._post({"add_hours": "0.5"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("5.5"))
+
+    def test_add_hours_integer_value(self):
+        response = self._post({"add_hours": "3"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("8.0"))
+
+    def test_add_hours_invalid_string_is_ignored(self):
+        response = self._post({"add_hours": "notanumber"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        # Hours should be unchanged
+        self.assertEqual(self.game.hours_played, Decimal("5.0"))
+
+    def test_add_hours_negative_is_ignored(self):
+        response = self._post({"add_hours": "-2"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("3.0"))
+
+    # --- delta_hours (+30m / -30m) ---
+
+    def test_delta_hours_add_30_minutes(self):
+        response = self._post({"delta_hours": "0.5"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("5.5"))
+
+    def test_delta_hours_subtract_30_minutes(self):
+        response = self._post({"delta_hours": "-0.5"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("4.5"))
+
+    def test_delta_hours_cannot_drop_below_zero(self):
+        self.game.hours_played = Decimal("0.2")
+        self.game.save()
+        response = self._post({"delta_hours": "-0.5"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("0.0"))
+
+    # --- set_completion ---
+
+    def test_set_completion_updates_percentage(self):
+        response = self._post({"set_completion": "75"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.completion_percentage, 75)
+
+    def test_set_completion_100_autocompletes_playing_game(self):
+        response = self._post({"set_completion": "100"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.completion_percentage, 100)
+        self.assertEqual(self.game.status, GameStatus.COMPLETED)
+
+    def test_set_completion_100_does_not_change_non_playing_status(self):
+        self.game.status = GameStatus.ON_HOLD
+        self.game.save()
+        response = self._post({"set_completion": "100"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        # ON_HOLD should NOT be auto-completed
+        self.assertEqual(self.game.status, GameStatus.ON_HOLD)
+
+    def test_set_completion_clamped_above_100(self):
+        response = self._post({"set_completion": "150"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.completion_percentage, 100)
+
+    def test_set_completion_clamped_below_0(self):
+        response = self._post({"set_completion": "-10"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.completion_percentage, 0)
+
+    def test_set_completion_invalid_string_is_ignored(self):
+        response = self._post({"set_completion": "abc"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.completion_percentage, 30)
+
+    # --- set_status ---
+
+    def test_set_status_changes_status(self):
+        response = self._post({"set_status": "COMPLETED"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.status, GameStatus.COMPLETED)
+
+    def test_set_status_to_backlog(self):
+        response = self._post({"set_status": "BACKLOG"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.status, GameStatus.BACKLOG)
+
+    def test_set_status_invalid_value_is_ignored(self):
+        response = self._post({"set_status": "INVALID_STATUS"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.status, GameStatus.PLAYING)
+
+    # --- access control ---
+
+    def test_other_user_gets_404(self):
+        other_game = GameEntry.objects.create(
+            user=self.other_user, title="Other Game", status=GameStatus.BACKLOG
+        )
+        response = self.client.post(reverse("quick_update_game", args=[other_game.pk]),
+                                    {"add_hours": "1"})
+        self.assertEqual(response.status_code, 404)
+        other_game.refresh_from_db()
+        self.assertEqual(other_game.hours_played, Decimal("0.0"))
+
+    def test_unauthenticated_user_is_redirected(self):
+        self.client.logout()
+        response = self._post({"add_hours": "1"})
+        # Should redirect to login, not 200 or 404
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response["Location"])
+
+    # --- redirect behavior ---
+
+    def test_redirects_to_next_param_when_provided(self):
+        response = self.client.post(self.url, {
+            "add_hours": "1",
+            "next": f"/games/{self.game.pk}/",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"/games/{self.game.pk}/")
+
+    def test_redirects_to_game_list_when_no_next(self):
+        response = self._post({"add_hours": "1"})
+        self.assertEqual(response.status_code, 302)
+        # Redirect goes somewhere (either referer or game_list)
+        self.assertIsNotNone(response["Location"])
+
+    # --- compound operations ---
+
+    def test_add_hours_and_set_completion_together(self):
+        """Both params in one POST should apply both changes."""
+        response = self._post({"add_hours": "2", "set_completion": "50"})
+        self.assertEqual(response.status_code, 302)
+        self.game.refresh_from_db()
+        self.assertEqual(self.game.hours_played, Decimal("7.0"))
+        self.assertEqual(self.game.completion_percentage, 50)

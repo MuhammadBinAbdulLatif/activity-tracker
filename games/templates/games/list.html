@@ -1,32 +1,31 @@
 {% extends "base_app.html" %}
 {% load static %}
 
-{% block title %}Games | uTrack{% endblock %}
+{% block title %}Video Games | uTrack{% endblock %}
 
 {% block content %}
-<div class="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-    <!-- Header Section -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-zinc-800/80 pb-6">
+    <!-- Top Header & Primary Action (standardized with Movies / Comics) -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
         <div>
             <div class="flex items-center gap-3">
-                <div class="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                <div class="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white">Video Games</h1>
-                    <p class="text-xs text-zinc-400 mt-0.5">Track your playtime, progress, and backlog across every platform.</p>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-white">Video Games</h1>
+                    <p class="text-xs sm:text-sm text-zinc-400 mt-0.5">Track your daily playtime, campaign progression, and gaming backlog.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Action Bar -->
         <div class="flex items-center gap-3">
             <button onclick="document.getElementById('search-modal').classList.remove('hidden')"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-sm transition">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    class="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                 </svg>
                 <span>Track Game</span>
@@ -34,157 +33,296 @@
         </div>
     </div>
 
-    <!-- Stats Bar -->
+    <!-- Quick Metrics Bar -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-white">{{ total_tracked }}</div>
-            <div class="text-[11px] text-zinc-500 mt-1 font-medium">Total Tracked</div>
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Total Tracked</span>
+                <div class="text-2xl font-black text-white mt-0.5">{{ total_tracked }}</div>
+            </div>
+            <div class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+            </div>
         </div>
-        <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-cyan-400">{{ total_hours|floatformat:0 }}h</div>
-            <div class="text-[11px] text-zinc-500 mt-1 font-medium">Hours Logged</div>
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-cyan-400 uppercase tracking-wider">Playtime Logged</span>
+                <div class="text-2xl font-black text-cyan-400 mt-0.5">{{ total_hours|floatformat:1 }}h</div>
+            </div>
+            <div class="p-2 rounded-lg bg-cyan-950/60 border border-cyan-800/50 text-cyan-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
         </div>
-        <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-emerald-400">{{ currently_playing_count }}</div>
-            <div class="text-[11px] text-zinc-500 mt-1 font-medium">Currently Playing</div>
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Playing Now</span>
+                <div class="text-2xl font-black text-emerald-400 mt-0.5">{{ currently_playing_count }}</div>
+            </div>
+            <div class="p-2 rounded-lg bg-emerald-950/60 border border-emerald-800/50 text-emerald-400">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 block animate-pulse"></span>
+            </div>
         </div>
-        <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-4 text-center">
-            <div class="text-2xl font-bold text-zinc-300">{{ completed_count }}</div>
-            <div class="text-[11px] text-zinc-500 mt-1 font-medium">Completed</div>
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Completed</span>
+                <div class="text-2xl font-black text-zinc-200 mt-0.5">{{ completed_count }}</div>
+            </div>
+            <div class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
         </div>
     </div>
 
-    <!-- Currently Playing Shelf -->
-    <div class="space-y-4">
+    <!-- ================================================================
+         CURRENTLY PLAYING — Focused daily gaming hub
+         ================================================================ -->
+    <section class="space-y-5">
         <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-zinc-100 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Currently Playing
-                <span class="text-xs text-zinc-500 font-normal">({{ playing.count }})</span>
-            </h2>
+            <div class="flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h2 class="text-lg font-bold text-white tracking-tight">Currently Playing</h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-400">
+                    {{ playing.count }} Active
+                </span>
+            </div>
         </div>
 
         {% if playing %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for game in playing %}
-            <div class="bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700/80 rounded-2xl overflow-hidden transition-all duration-200 group">
-                <!-- Cover -->
-                <div class="relative aspect-video w-full overflow-hidden bg-zinc-950">
-                    {% if game.display_cover %}
-                    <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    {% else %}
-                    <div class="w-full h-full flex flex-col items-center justify-center text-zinc-600 p-4 text-center">
-                        <svg class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-                        </svg>
-                        <span class="text-xs text-zinc-500 font-medium line-clamp-2">{{ game.title }}</span>
+            <div class="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700/80 shadow-xl transition-all flex flex-col justify-between space-y-4 group">
+
+                <!-- Header / Poster + Metadata -->
+                <a href="{% url 'game_detail' game.id %}" class="flex gap-4 group/link">
+                    <div class="relative w-28 h-36 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-md shrink-0 group-hover/link:scale-105 transition-transform duration-200">
+                        {% if game.display_cover %}
+                        <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full flex flex-col items-center justify-center text-zinc-600 p-2 text-center">
+                            <svg class="w-8 h-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+                            </svg>
+                            <span class="text-[10px] text-zinc-500 font-medium line-clamp-2">{{ game.title }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if game.rating %}
+                        <div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-black/80 backdrop-blur-md text-amber-300 border border-zinc-700/60 flex items-center gap-0.5">
+                            <span>★</span><span>{{ game.rating }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    <!-- Platform badge -->
-                    {% if game.platform_played %}
-                    <div class="absolute top-2 left-2">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-md bg-zinc-950/80 text-cyan-300 border border-cyan-700/60">
-                            {{ game.platform_played }}
+
+                    <div class="flex flex-col justify-center min-w-0 flex-1">
+                        {% if game.platform_played %}
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 truncate">
+                            🎮 {{ game.platform_played }}
                         </span>
+                        {% else %}
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Video Game</span>
+                        {% endif %}
+
+                        <h3 class="text-base font-bold text-white truncate group-hover/link:text-cyan-400 transition-colors mt-0.5" title="{{ game.title }}">
+                            {{ game.title }}
+                        </h3>
+
+                        <p class="text-xs text-zinc-400 truncate mt-1">
+                            {{ game.developers|default:game.publishers|default:"Studio Unlisted" }}
+                            {% if game.release_year %}&bull; {{ game.release_year }}{% endif %}
+                        </p>
+
+                        <!-- Hours badge & Progress stat -->
+                        <div class="mt-3 flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-cyan-300 font-bold">
+                                ⏱ {{ game.hours_display }}
+                            </span>
+                            <span class="text-xs font-semibold text-emerald-400">
+                                {{ game.completion_display }}
+                            </span>
+                        </div>
                     </div>
-                    {% endif %}
-                    <!-- Rating badge -->
-                    {% if game.rating %}
-                    <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-950/80 text-amber-300 border border-zinc-700/60 backdrop-blur-md flex items-center gap-1">
-                        <span>★</span><span>{{ game.rating }}</span>
+                </a>
+
+                <!-- Progress Bar -->
+                <div class="space-y-1">
+                    <div class="w-full bg-zinc-800/80 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" style="width: {{ game.completion_percentage }}%;"></div>
                     </div>
-                    {% endif %}
                 </div>
 
-                <!-- Info -->
-                <div class="p-4">
-                    <a href="{% url 'game_detail' game.id %}" class="block group-hover:text-cyan-400 transition-colors">
-                        <h3 class="font-bold text-sm text-zinc-100 truncate" title="{{ game.title }}">{{ game.title }}</h3>
-                    </a>
-                    <p class="text-xs text-zinc-400 truncate mt-0.5">{{ game.developers|default:game.publishers|default:"Unknown Developer" }}</p>
-
-                    <!-- Progress bar -->
-                    <div class="mt-3 space-y-1.5">
-                        <div class="flex justify-between text-[11px] text-zinc-400">
-                            <span class="text-emerald-400 font-semibold">{{ game.completion_display }}</span>
-                            <span class="text-cyan-400 font-semibold">{{ game.hours_display }}</span>
-                        </div>
-                        <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-                            <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" style="width: {{ game.completion_percentage }}%;"></div>
-                        </div>
+                <!-- Daily Playtime Stepper: Clean -30m / +30m Two-Button Stepper -->
+                <div class="pt-3 border-t border-zinc-900 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Log Playtime</span>
+                        <span class="text-[10px] font-mono text-zinc-400">Total: {{ game.hours_display }}</span>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <!-- -30 minutes button -->
+                        <form action="{% url 'quick_update_game' game.id %}" method="POST" class="w-full">
+                            {% csrf_token %}
+                            <input type="hidden" name="delta_hours" value="-0.5">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" {% if game.hours_played <= 0 %}disabled{% endif %}
+                                    class="w-full py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 {% if game.hours_played <= 0 %}bg-zinc-900 text-zinc-600 border border-zinc-800/50 cursor-not-allowed opacity-50{% else %}bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 active:scale-95 cursor-pointer shadow-sm{% endif %}"
+                                    title="Subtract 30 minutes">
+                                <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                                </svg>
+                                <span>-30m</span>
+                            </button>
+                        </form>
+
+                        <!-- +30 minutes button (Primary prominent action) -->
+                        <form action="{% url 'quick_update_game' game.id %}" method="POST" class="w-full">
+                            {% csrf_token %}
+                            <input type="hidden" name="delta_hours" value="0.5">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit"
+                                    class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-zinc-950 transition flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 cursor-pointer"
+                                    title="Add 30 minutes of gameplay">
+                                <svg class="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span>+30m</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Quick status actions -->
+                    <div class="flex items-center justify-between pt-1 text-xs">
+                        <!-- Mark Completed -->
+                        <form action="{% url 'quick_update_game' game.id %}" method="POST" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="set_status" value="COMPLETED">
+                            <input type="hidden" name="set_completion" value="100">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1">
+                                <svg class="w-3 h-3 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Mark Completed
+                            </button>
+                        </form>
+
+                        <a href="{% url 'game_detail' game.id %}" class="text-[11px] font-semibold text-zinc-500 hover:text-zinc-300 transition-colors">
+                            Details &rarr;
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="rounded-2xl border border-zinc-800/60 bg-zinc-900/20 p-10 text-center">
+            <svg class="w-10 h-10 mx-auto text-zinc-600 mb-3 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+            </svg>
+            <p class="text-sm font-medium text-zinc-300">No games currently in progress</p>
+            <p class="text-xs text-zinc-500 mt-1">Search the database or pick a title from your backlog to start playing.</p>
+            <button onclick="document.getElementById('search-modal').classList.remove('hidden')"
+                    class="mt-4 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-cyan-400 font-semibold transition">
+                + Track a Game
+            </button>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- ================================================================
+         BACKLOG / UP NEXT QUEUE
+         ================================================================ -->
+    <section class="space-y-4 pt-4 border-t border-zinc-800/60">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                <h2 class="text-lg font-bold text-white tracking-tight">Backlog & Queue</h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-400">
+                    {{ backlog.count }}
+                </span>
+            </div>
+        </div>
+
+        {% if backlog %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {% for game in backlog %}
+            <div class="p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700/80 shadow-md transition-all flex flex-col justify-between space-y-3 group">
+                <a href="{% url 'game_detail' game.id %}" class="flex gap-3 group/item">
+                    <div class="w-16 h-20 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
+                        {% if game.display_cover %}
+                        <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-200">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-zinc-700">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="min-w-0 flex-1 flex flex-col justify-center">
+                        <h4 class="text-sm font-bold text-white truncate group-hover/item:text-cyan-400 transition-colors" title="{{ game.title }}">
+                            {{ game.title }}
+                        </h4>
+                        <p class="text-xs text-zinc-400 truncate mt-0.5">
+                            {{ game.genres|default:game.developers|default:"Backlog" }}
+                            {% if game.release_year %}&bull; {{ game.release_year }}{% endif %}
+                        </p>
+                        {% if game.platform_played %}
+                        <span class="text-[10px] text-zinc-500 font-mono mt-1">🎮 {{ game.platform_played }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+
+                <div class="pt-2 border-t border-zinc-900 flex items-center gap-2">
+                    <!-- Quick Play button -->
+                    <form action="{% url 'quick_update_game' game.id %}" method="POST" class="flex-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="set_status" value="PLAYING">
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit"
+                                class="w-full py-1.5 px-3 bg-zinc-900 hover:bg-emerald-500 hover:text-zinc-950 text-emerald-400 font-bold text-xs rounded-xl border border-zinc-800 hover:border-emerald-500 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            </svg>
+                            <span>Start Playing</span>
+                        </button>
+                    </form>
                 </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
-        <div class="text-center py-10 rounded-2xl border border-dashed border-zinc-800/60 bg-zinc-900/20">
-            <svg class="w-10 h-10 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-            </svg>
-            <p class="text-sm text-zinc-500">No games currently playing.</p>
-            <button onclick="document.getElementById('search-modal').classList.remove('hidden')"
-                    class="mt-3 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">+ Track a game</button>
-        </div>
+        <p class="text-sm text-zinc-500 py-2">Your backlog is clear. Search and queue up games you want to explore next.</p>
         {% endif %}
-    </div>
+    </section>
 
-    <!-- Backlog / Plan to Play -->
-    <div class="space-y-4">
-        <h2 class="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-            Backlog <span class="text-xs text-zinc-500 font-normal">({{ backlog.count }})</span>
-        </h2>
-
-        {% if backlog %}
-        <div class="space-y-2">
-            {% for game in backlog %}
-            <a href="{% url 'game_detail' game.id %}"
-               class="flex items-center gap-4 p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700/60 hover:bg-zinc-900/70 transition-all group">
-                <!-- Small cover -->
-                <div class="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-950 border border-zinc-800/60">
-                    {% if game.display_cover %}
-                    <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover">
-                    {% else %}
-                    <div class="w-full h-full flex items-center justify-center text-zinc-700">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-                        </svg>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-sm text-zinc-200 group-hover:text-white truncate">{{ game.title }}</div>
-                    <div class="text-xs text-zinc-500 truncate">
-                        {{ game.genres|default:"" }}{% if game.release_year %} · {{ game.release_year }}{% endif %}
-                    </div>
-                </div>
-                {% if game.platform_played %}
-                <span class="text-[10px] px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/50 flex-shrink-0">{{ game.platform_played }}</span>
-                {% endif %}
-                <svg class="w-4 h-4 text-zinc-700 group-hover:text-zinc-400 flex-shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    <!-- ================================================================
+         COMPLETED GAMES ARCHIVE
+         ================================================================ -->
+    <section class="space-y-4 pt-4 border-t border-zinc-800/60">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-            </a>
-            {% endfor %}
+                <h2 class="text-lg font-bold text-white tracking-tight">Completed Games</h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-900 border border-zinc-800 text-zinc-400">
+                    {{ completed.count }}
+                </span>
+            </div>
         </div>
-        {% else %}
-        <p class="text-sm text-zinc-600 py-4">Your backlog is clear — add games you plan to play.</p>
-        {% endif %}
-    </div>
-
-    <!-- Completed Shelf -->
-    <div class="space-y-4">
-        <h2 class="text-base font-semibold text-zinc-100 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-zinc-500"></span>
-            Completed <span class="text-xs text-zinc-500 font-normal">({{ completed.count }})</span>
-        </h2>
 
         {% if completed %}
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {% for game in completed %}
-            <a href="{% url 'game_detail' game.id %}" class="group block">
-                <div class="relative aspect-video rounded-xl overflow-hidden bg-zinc-950 border border-zinc-800/60 mb-2">
+            <a href="{% url 'game_detail' game.id %}" class="group block space-y-2">
+                <div class="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-zinc-950 border border-zinc-800 shadow-md group-hover:border-zinc-700 transition">
                     {% if game.display_cover %}
                     <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                     {% else %}
@@ -194,44 +332,54 @@
                         </svg>
                     </div>
                     {% endif %}
+
                     {% if game.rating %}
-                    <div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-950/90 text-amber-300 border border-zinc-700/60 backdrop-blur-md flex items-center gap-0.5">
+                    <div class="absolute bottom-1 right-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-black/80 text-amber-300 border border-zinc-700/60 backdrop-blur-md">
                         <span>★</span><span>{{ game.rating }}</span>
                     </div>
                     {% endif %}
                 </div>
-                <div class="text-xs font-semibold text-zinc-300 group-hover:text-white truncate transition-colors">{{ game.title }}</div>
-                <div class="text-[11px] text-zinc-600">{{ game.hours_display }}</div>
+                <div>
+                    <h4 class="text-xs font-bold text-zinc-200 group-hover:text-white truncate transition-colors">{{ game.title }}</h4>
+                    <p class="text-[11px] font-mono text-zinc-500 mt-0.5">{{ game.hours_display }}</p>
+                </div>
             </a>
             {% endfor %}
         </div>
         {% else %}
-        <p class="text-sm text-zinc-600 py-4">No completed games yet — keep playing!</p>
+        <p class="text-sm text-zinc-500 py-2">No completed games yet.</p>
         {% endif %}
-    </div>
+    </section>
 
-    <!-- On Hold / Dropped (collapsed) -->
+    <!-- On Hold / Dropped -->
     {% if on_hold or dropped %}
-    <details class="group border border-zinc-800/60 rounded-xl overflow-hidden">
-        <summary class="flex items-center justify-between px-4 py-3 bg-zinc-900/40 cursor-pointer select-none list-none">
-            <span class="text-sm font-medium text-zinc-400 group-open:text-zinc-200 transition-colors">On Hold & Dropped
-                <span class="text-xs text-zinc-600 font-normal">({{ on_hold.count|add:dropped.count }})</span>
+    <details class="group border border-zinc-800/60 rounded-2xl overflow-hidden bg-zinc-950/60">
+        <summary class="flex items-center justify-between px-5 py-3.5 bg-zinc-900/40 cursor-pointer select-none list-none hover:bg-zinc-900/60 transition-colors">
+            <span class="text-sm font-semibold text-zinc-400 group-open:text-zinc-200 transition-colors flex items-center gap-2">
+                <span>On Hold &amp; Dropped</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-mono">({{ on_hold.count|add:dropped.count }})</span>
             </span>
-            <svg class="w-4 h-4 text-zinc-600 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-4 h-4 text-zinc-500 group-open:rotate-180 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
         </summary>
-        <div class="px-4 py-4 space-y-2">
+        <div class="p-4 space-y-2 border-t border-zinc-800/40">
             {% for game in on_hold %}
-            <a href="{% url 'game_detail' game.id %}" class="flex items-center gap-3 py-2 border-b border-zinc-800/40 hover:text-yellow-300 transition-colors group">
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 flex-shrink-0">On Hold</span>
-                <span class="text-sm text-zinc-300 group-hover:text-yellow-300 transition-colors truncate">{{ game.title }}</span>
+            <a href="{% url 'game_detail' game.id %}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-zinc-900/60 transition-colors group">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="text-[10px] px-2 py-0.5 rounded-md bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-semibold shrink-0">On Hold</span>
+                    <span class="text-sm font-medium text-zinc-300 group-hover:text-yellow-300 transition-colors truncate">{{ game.title }}</span>
+                </div>
+                <span class="text-xs font-mono text-zinc-500 shrink-0">{{ game.hours_display }}</span>
             </a>
             {% endfor %}
             {% for game in dropped %}
-            <a href="{% url 'game_detail' game.id %}" class="flex items-center gap-3 py-2 border-b border-zinc-800/40 hover:text-red-300 transition-colors group">
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-red-950/40 text-red-400 border border-red-800/40 flex-shrink-0">Dropped</span>
-                <span class="text-sm text-zinc-300 group-hover:text-red-300 transition-colors truncate">{{ game.title }}</span>
+            <a href="{% url 'game_detail' game.id %}" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-zinc-900/60 transition-colors group">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="text-[10px] px-2 py-0.5 rounded-md bg-red-950/40 text-red-400 border border-red-800/40 font-semibold shrink-0">Dropped</span>
+                    <span class="text-sm font-medium text-zinc-300 group-hover:text-red-300 transition-colors truncate">{{ game.title }}</span>
+                </div>
+                <span class="text-xs font-mono text-zinc-500 shrink-0">{{ game.hours_display }}</span>
             </a>
             {% endfor %}
         </div>
@@ -241,91 +389,187 @@
 </div>
 
 <!-- =====================================================================
-     SEARCH MODAL
+     SEARCH / ADD MODAL
      ===================================================================== -->
-<div id="search-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onclick="if(event.target===this)this.classList.add('hidden')">
-    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-800/80">
-            <h2 class="text-base font-bold text-zinc-100">Track a Game</h2>
-            <button onclick="document.getElementById('search-modal').classList.add('hidden')" class="text-zinc-500 hover:text-zinc-200 transition-colors">
+<div id="search-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+     onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-800/80 flex-shrink-0">
+            <div>
+                <h2 class="text-base font-bold text-zinc-100">Track a Game</h2>
+                <p class="text-xs text-zinc-500 mt-0.5">Search RAWG database or create a custom entry with custom cover art.</p>
+            </div>
+            <button onclick="document.getElementById('search-modal').classList.add('hidden')"
+                    class="text-zinc-500 hover:text-zinc-200 transition-colors p-1.5 rounded-lg hover:bg-zinc-800">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
 
-        <!-- Search Input -->
-        <div class="px-5 py-4 border-b border-zinc-800/40">
-            <div class="relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <input
-                    id="game-search-input"
-                    type="text"
-                    placeholder="Search games by title…"
-                    autocomplete="off"
-                    hx-get="{% url 'search_games' %}"
-                    hx-trigger="input changed delay:400ms, search"
-                    hx-target="#search-results"
-                    hx-indicator="#search-spinner"
-                    name="q"
-                    class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 text-sm focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 transition-colors"
-                >
-                <span id="search-spinner" class="htmx-indicator absolute right-3 top-1/2 -translate-y-1/2">
-                    <svg class="w-4 h-4 animate-spin text-cyan-400" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                    </svg>
-                </span>
-            </div>
-        </div>
-
-        <!-- Search Results -->
-        <div id="search-results" class="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-            <p class="text-xs text-zinc-600 text-center py-6">Type a game title to search…</p>
-        </div>
-
-        <!-- Manual Add Divider -->
-        <div class="px-5 py-3 border-t border-zinc-800/60 bg-zinc-950/80">
-            <button onclick="document.getElementById('manual-form').classList.toggle('hidden')"
-                    class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                </svg>
-                Add manually (not in database)
+        <!-- Tab Bar -->
+        <div class="flex border-b border-zinc-800/60 flex-shrink-0 px-5 pt-3 gap-4">
+            <button onclick="switchTab('search')" id="tab-search"
+                    class="text-xs font-bold pb-2.5 border-b-2 border-cyan-500 text-cyan-400 transition-colors cursor-pointer">
+                🔍 Search RAWG Database
+            </button>
+            <button onclick="switchTab('manual')" id="tab-manual"
+                    class="text-xs font-bold pb-2.5 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
+                ✏️ Create Custom Game
             </button>
         </div>
 
-        <!-- Manual Form (hidden by default) -->
-        <div id="manual-form" class="hidden border-t border-zinc-800/60 px-5 py-4 max-h-64 overflow-y-auto">
-            <form method="POST" action="{% url 'add_game' %}" enctype="multipart/form-data" class="space-y-3">
-                {% csrf_token %}
-                <div>
-                    <label class="block text-xs font-medium text-zinc-400 mb-1">Title *</label>
-                    {{ form.title }}
-                    {% for e in form.title.errors %}<p class="text-xs text-red-400 mt-1">{{ e }}</p>{% endfor %}
+        <!-- Search Tab -->
+        <div id="tab-content-search" class="flex flex-col flex-1 min-h-0">
+            <div class="px-5 py-4 border-b border-zinc-800/40 flex-shrink-0">
+                <div class="relative">
+                    <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="q" id="game-search-input" placeholder="Search by title (e.g. Elden Ring, Hollow Knight, Cyberpunk)…"
+                           autocomplete="off"
+                           hx-get="{% url 'search_games' %}"
+                           hx-trigger="input changed delay:400ms, search"
+                           hx-target="#search-results"
+                           hx-indicator="#search-spinner"
+                           class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors">
+                    <span id="search-spinner" class="htmx-indicator absolute right-3.5 top-1/2 -translate-y-1/2">
+                        <svg class="w-4 h-4 animate-spin text-cyan-400" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                        </svg>
+                    </span>
                 </div>
+            </div>
+            <div id="search-results" class="flex-1 overflow-y-auto px-4 py-3 min-h-0">
+                <div class="text-center py-12">
+                    <svg class="w-10 h-10 text-zinc-800 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <p class="text-sm text-zinc-500 font-medium">Type a game title above to search…</p>
+                    <p class="text-xs text-zinc-600 mt-1">Directly enriches cover art, genres, release dates, and platforms.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Add Tab -->
+        <div id="tab-content-manual" class="hidden flex-1 overflow-y-auto">
+            <form method="POST" action="{% url 'add_game' %}" enctype="multipart/form-data" class="px-5 py-5 space-y-4">
+                {% csrf_token %}
+
+                <!-- Cover image upload with prominent styled preview -->
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Game Cover Image</label>
+                    <div class="flex items-start gap-4 p-3 rounded-2xl bg-zinc-900/60 border border-zinc-800">
+                        <!-- Preview box -->
+                        <div id="cover-preview-box" class="w-24 h-32 flex-shrink-0 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-700 shadow-inner">
+                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 space-y-2">
+                            <label for="id_custom_cover_manual" class="block w-full cursor-pointer">
+                                <div class="flex flex-col items-center justify-center px-4 py-4 rounded-xl bg-zinc-900 border border-dashed border-zinc-700 hover:border-cyan-500 hover:bg-zinc-800/80 transition-colors text-center group">
+                                    <svg class="w-5 h-5 text-zinc-500 group-hover:text-cyan-400 transition-colors mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                    </svg>
+                                    <span class="text-xs text-zinc-300 font-semibold group-hover:text-white">Choose Cover Art</span>
+                                    <span class="text-[10px] text-zinc-500 mt-0.5">PNG, JPG, WEBP (Max 5MB)</span>
+                                </div>
+                            </label>
+                            <input type="file" name="custom_cover" id="id_custom_cover_manual" accept="image/*" class="hidden"
+                                   onchange="previewCover(this, 'cover-preview-box')">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Game Title <span class="text-red-400">*</span></label>
+                    <input type="text" name="title" required placeholder="e.g. Persona 5 Royal, Chrono Trigger…"
+                           class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors">
+                </div>
+
+                <!-- Status & Platform -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Status</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Initial Status</label>
                         {{ form.status }}
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-zinc-400 mb-1">Platform Played</label>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Platform Played</label>
                         {{ form.platform_played }}
                     </div>
                 </div>
-                <button type="submit" class="w-full py-2 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-medium text-sm rounded-lg shadow-sm transition-all">
-                    Add Game
+
+                <!-- Hours & Completion -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Hours Played</label>
+                        <input type="number" name="hours_played" value="0.0" step="0.5" min="0"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-100 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Completion %</label>
+                        <input type="number" name="completion_percentage" value="0" min="0" max="100"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-100 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors">
+                    </div>
+                </div>
+
+                <!-- Rating -->
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Personal Rating (1.0 – 10.0)</label>
+                    <input type="number" name="rating" step="0.1" min="1" max="10" placeholder="Optional"
+                           class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors">
+                </div>
+
+                <!-- Review -->
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Initial Notes / Review</label>
+                    <textarea name="review" rows="2" placeholder="Your thoughts or impressions…"
+                              class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-100 placeholder:text-zinc-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors resize-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 px-4 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm rounded-xl shadow-lg shadow-cyan-500/20 transition-all cursor-pointer">
+                    Add Game to Chronicle
                 </button>
             </form>
         </div>
+
     </div>
 </div>
 
 <script>
-// HTMX is loaded globally via base_app.html
+function switchTab(tab) {
+    const tabs = ['search', 'manual'];
+    tabs.forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        const content = document.getElementById('tab-content-' + t);
+        if (t === tab) {
+            btn.classList.add('border-cyan-500', 'text-cyan-400');
+            btn.classList.remove('border-transparent', 'text-zinc-500');
+            content.classList.remove('hidden');
+            if (t === 'search') content.classList.add('flex', 'flex-col', 'flex-1', 'min-h-0');
+        } else {
+            btn.classList.remove('border-cyan-500', 'text-cyan-400');
+            btn.classList.add('border-transparent', 'text-zinc-500');
+            content.classList.add('hidden');
+        }
+    });
+}
+
+function previewCover(input, previewId) {
+    const box = document.getElementById(previewId);
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            box.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover" alt="Cover preview">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
+
 {% endblock %}
