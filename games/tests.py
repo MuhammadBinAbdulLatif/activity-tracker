@@ -356,7 +356,6 @@ class GameViewTests(TestCase):
                 "title": "Elden Ring",
                 "status": "COMPLETED",
                 "hours_played": "80.0",
-                "completion_percentage": "100",
                 "rating": "9.8",
                 "review": "Masterpiece.",
                 "notes": "",
@@ -367,7 +366,6 @@ class GameViewTests(TestCase):
         self.playing_game.refresh_from_db()
         self.assertEqual(self.playing_game.status, GameStatus.COMPLETED)
         self.assertEqual(self.playing_game.hours_played, Decimal("80.0"))
-        self.assertEqual(self.playing_game.completion_percentage, 100)
         self.assertEqual(self.playing_game.review, "Masterpiece.")
 
     # --- Delete ---

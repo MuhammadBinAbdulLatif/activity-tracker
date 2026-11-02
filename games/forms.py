@@ -14,7 +14,6 @@ class GameEntryForm(forms.ModelForm):
             "status",
             "platform_played",
             "hours_played",
-            "completion_percentage",
             "rating",
             "review",
             "notes",
@@ -91,12 +90,10 @@ class GameEntryForm(forms.ModelForm):
             }),
         }
 
-    def clean_completion_percentage(self):
-        value = self.cleaned_data.get("completion_percentage", 0)
-        return max(0, min(100, value))
-
     def clean_hours_played(self):
-        value = self.cleaned_data.get("hours_played", 0)
+        value = self.cleaned_data.get("hours_played")
+        if value is None:
+            return 0.0
         if value < 0:
             raise forms.ValidationError("Hours played cannot be negative.")
         return value

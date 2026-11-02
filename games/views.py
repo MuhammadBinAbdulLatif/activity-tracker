@@ -132,9 +132,13 @@ def add_game(request: HttpRequest):
         messages.success(request, f"Created custom game '{entry.title}'.")
         return redirect("game_detail", pk=entry.pk)
 
-    # Form errors — show alert message and redirect cleanly (PRG pattern)
-    first_error = next(iter(form.errors.values()))[0] if form.errors else "Please check the form fields."
-    messages.error(request, f"Could not create game: {first_error}")
+    # Form errors — show specific field error message
+    error_parts = []
+    for field, err_list in form.errors.items():
+        field_label = form.fields[field].label or field.replace('_', ' ').title() if field in form.fields else field
+        error_parts.append(f"{field_label}: {err_list[0]}")
+    error_msg = "; ".join(error_parts) if error_parts else "Please check the form fields."
+    messages.error(request, f"Could not create game: {error_msg}")
     return redirect("game_list")
 
 
