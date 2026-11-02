@@ -1,0 +1,250 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}{{ entry.title }} | Board Games | uTrack{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Back Navigation & Actions -->
+    <div class="flex items-center justify-between">
+        <a href="{% url 'boardgame_list' %}" class="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back to Board Games</span>
+        </a>
+
+        <div class="flex items-center gap-2">
+            <button onclick="document.getElementById('edit-modal').classList.remove('hidden')"
+                    class="px-3.5 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg transition-colors">
+                Edit Details
+            </button>
+            <form method="POST" action="{% url 'delete_boardgame' entry.pk %}" onsubmit="return confirm('Remove this board game from your chronicle?');">
+                {% csrf_token %}
+                <button type="submit" class="px-3.5 py-1.5 text-xs font-semibold text-red-400 hover:text-red-300 bg-red-950/20 border border-red-900/40 hover:bg-red-950/40 rounded-lg transition-colors">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hero Card -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-zinc-950 border border-zinc-800/80 shadow-2xl relative overflow-hidden flex flex-col md:flex-row gap-8 items-start">
+        <!-- Cover Art -->
+        <div class="w-full md:w-64 aspect-[4/3] md:aspect-square flex-shrink-0 rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800/80 relative shadow-lg flex items-center justify-center">
+            {% if entry.display_cover %}
+            <img src="{{ entry.display_cover }}" alt="{{ entry.title }}" class="w-full h-full object-cover">
+            {% else %}
+            <div class="flex items-center justify-center w-full h-full text-zinc-700">
+                <svg class="w-16 h-16 text-orange-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Meta Information -->
+        <div class="flex-1 space-y-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="text-xs px-2.5 py-1 rounded-md font-semibold {{ entry.status_badge_class }}">
+                    {{ entry.get_status_display }}
+                </span>
+                {% if entry.year_published %}
+                <span class="text-xs text-zinc-500 font-mono">{{ entry.year_published }}</span>
+                {% endif %}
+                {% if entry.bgg_rank %}
+                <span class="text-xs px-2 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
+                    BGG Rank #{{ entry.bgg_rank }}
+                </span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">{{ entry.title }}</h1>
+
+            <!-- Quick Specs Row -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/60">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500">Players</span>
+                    <div class="text-sm font-semibold text-zinc-200 mt-0.5">{{ entry.player_count_display }}</div>
+                </div>
+                <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/60">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500">Playtime</span>
+                    <div class="text-sm font-semibold text-zinc-200 mt-0.5">{{ entry.playtime_display }}</div>
+                </div>
+                <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/60">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500">BGG Rating</span>
+                    <div class="text-sm font-semibold text-amber-400 mt-0.5">
+                        {% if entry.bgg_rating %}★ {{ entry.bgg_rating }}{% else %}Unrated{% endif %}
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/60">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500">My Rating</span>
+                    <div class="text-sm font-semibold text-emerald-400 mt-0.5">
+                        {% if entry.rating %}★ {{ entry.rating }} / 10{% else %}Not Rated{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Taxonomies & Credits -->
+            <div class="text-xs text-zinc-400 space-y-1.5 pt-2 border-t border-zinc-900">
+                {% if entry.designers %}
+                <div><span class="text-zinc-500 font-medium">Designers:</span> {{ entry.designers }}</div>
+                {% endif %}
+                {% if entry.publishers %}
+                <div><span class="text-zinc-500 font-medium">Publishers:</span> {{ entry.publishers }}</div>
+                {% endif %}
+                {% if entry.categories %}
+                <div><span class="text-zinc-500 font-medium">Categories:</span> {{ entry.categories }}</div>
+                {% endif %}
+                {% if entry.mechanics %}
+                <div><span class="text-zinc-500 font-medium">Mechanics:</span> {{ entry.mechanics }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Play Session Stepper / Logger -->
+            <div class="pt-4 flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-3 p-3 rounded-2xl bg-zinc-900 border border-zinc-800">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-zinc-500 block">Total Plays</span>
+                        <span class="text-xl font-black text-emerald-400">{{ entry.play_count }}</span>
+                    </div>
+                    <form method="POST" action="{% url 'log_play' entry.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            <svg class="w-3.5 h-3.5 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            <span>Log Play</span>
+                        </button>
+                    </form>
+                </div>
+                {% if entry.last_played %}
+                <span class="text-xs text-zinc-400">
+                    Last session: <span class="text-zinc-200 font-medium">{{ entry.last_played|date:"F j, Y" }}</span>
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Description, Review & Session Notes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Review / Personal Retrospective -->
+        <div class="p-6 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Personal Retrospective
+            </h3>
+            {% if entry.review %}
+            <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed whitespace-pre-line">{{ entry.review }}</p>
+            {% else %}
+            <p class="text-xs text-zinc-500 italic">No personal review written yet. Use Edit Details to add your verdict.</p>
+            {% endif %}
+
+            {% if entry.favorite_players %}
+            <div class="pt-3 border-t border-zinc-900 text-xs">
+                <span class="text-zinc-500 font-medium">Favorite group / players:</span>
+                <span class="text-zinc-300 ml-1">{{ entry.favorite_players }}</span>
+            </div>
+            {% endif %}
+
+            {% if entry.notes %}
+            <div class="pt-3 border-t border-zinc-900 text-xs space-y-1">
+                <span class="text-zinc-500 font-medium">Collection Notes:</span>
+                <p class="text-zinc-300 whitespace-pre-line">{{ entry.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Description from BGG -->
+        <div class="p-6 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Overview & Description
+            </h3>
+            {% if entry.description %}
+            <div class="text-xs text-zinc-400 leading-relaxed max-h-72 overflow-y-auto pr-2 space-y-2">
+                {{ entry.description|safe }}
+            </div>
+            {% else %}
+            <p class="text-xs text-zinc-500 italic">No synopsis available for this game.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 pt-12 overflow-y-auto">
+    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl p-6">
+        <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
+            <h3 class="text-base font-bold text-white">Edit Board Game Details</h3>
+            <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="text-zinc-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'update_boardgame_details' entry.pk %}" enctype="multipart/form-data" class="space-y-4 mt-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Title</label>
+                {{ form.title }}
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Status</label>
+                    {{ form.status }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Rating (1.0–10.0)</label>
+                    {{ form.rating }}
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Play Count</label>
+                    {{ form.play_count }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Last Played Date</label>
+                    {{ form.last_played }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Avg Session (min)</label>
+                    {{ form.avg_session_minutes }}
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Favorite Players / Group</label>
+                {{ form.favorite_players }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Personal Review / Verdict</label>
+                {{ form.review }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Notes (House Rules, Sleeves, Storage)</label>
+                {{ form.notes }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Custom Box Artwork</label>
+                {{ form.custom_cover }}
+            </div>
+
+            {{ form.cover_url }}
+            {{ form.external_id }}
+            {{ form.description }}
+
+            <div class="pt-4 border-t border-zinc-800 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white rounded-lg">Cancel</button>
+                <button type="submit" class="px-5 py-2 text-xs font-bold bg-orange-500 hover:bg-orange-400 text-zinc-950 rounded-xl transition-all">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

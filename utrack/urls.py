@@ -12,6 +12,7 @@ urlpatterns = [
     path('audiobooks/', include('audiobooks.urls')),
     path('comics/', include('comics.urls')),
     path('games/', include('games.urls')),
+    path('boardgames/', include('boardgames.urls')),
     path('', include('dashboard.urls')),
 ]
 

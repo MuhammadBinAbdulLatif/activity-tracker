@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "audiobooks",
     "comics",
     "games",
+    "boardgames",
     "storages",
 ]
 

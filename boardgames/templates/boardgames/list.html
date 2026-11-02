@@ -1,0 +1,393 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block title %}Board Games | uTrack{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Top Header & Primary Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
+        <div>
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-white">Board Games</h1>
+                    <p class="text-xs sm:text-sm text-zinc-400 mt-0.5">Track your tabletop collection, game nights, and play sessions with BGG enrichment.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="document.getElementById('search-modal').classList.remove('hidden')"
+                    class="px-5 py-2.5 bg-orange-500 hover:bg-orange-400 active:scale-95 text-zinc-950 font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Add Board Game</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Metrics Bar -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Total Tracked</span>
+                <div class="text-2xl font-black text-white mt-0.5">{{ total_tracked }}</div>
+            </div>
+            <div class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+            </div>
+        </div>
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Play Sessions</span>
+                <div class="text-2xl font-black text-emerald-400 mt-0.5">{{ total_sessions }}</div>
+            </div>
+            <div class="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Owned On Shelf</span>
+                <div class="text-2xl font-black text-orange-400 mt-0.5">{{ owned_count }}</div>
+            </div>
+            <div class="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                </svg>
+            </div>
+        </div>
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 shadow-md flex items-center justify-between">
+            <div>
+                <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">Unique Played</span>
+                <div class="text-2xl font-black text-white mt-0.5">{{ unique_played_count }}</div>
+            </div>
+            <div class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shelves: Played, Owned, Want to Play, Wishlist -->
+    <div class="space-y-12">
+
+        <!-- Played Shelf -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <h2 class="text-lg font-bold text-white tracking-tight">Played & Active</h2>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-medium">{{ played.count }}</span>
+                </div>
+            </div>
+
+            {% if played %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {% for game in played %}
+                <div class="group relative flex flex-col bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800/80 hover:border-zinc-700/80 rounded-2xl overflow-hidden transition-all duration-200">
+                    <a href="{% url 'boardgame_detail' game.pk %}" class="aspect-[4/3] bg-zinc-950 relative overflow-hidden flex items-center justify-center">
+                        {% if game.display_cover %}
+                        <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        {% else %}
+                        <div class="flex items-center justify-center w-full h-full text-zinc-700">
+                            <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <div class="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[10px] font-semibold text-emerald-400">
+                            {{ game.play_count }} plays
+                        </div>
+                    </a>
+                    <div class="p-3 flex flex-col flex-1 justify-between">
+                        <div>
+                            <a href="{% url 'boardgame_detail' game.pk %}" class="text-sm font-bold text-zinc-100 hover:text-white line-clamp-1">{{ game.title }}</a>
+                            <div class="text-[11px] text-zinc-500 mt-0.5 line-clamp-1">
+                                {{ game.player_count_display }} · {{ game.playtime_display }}
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-zinc-800/60 flex items-center justify-between">
+                            <span class="text-[10px] text-zinc-400">
+                                {% if game.last_played %}Last: {{ game.last_played|date:"M j" }}{% else %}Unrecorded{% endif %}
+                            </span>
+                            <form method="POST" action="{% url 'log_play' game.pk %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-[10px] px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold transition-colors">
+                                    +1 Play
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-8 rounded-2xl bg-zinc-950/40 border border-zinc-800/60 text-center">
+                <p class="text-xs text-zinc-500">No board games logged as played yet. Search and mark your first tabletop session!</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Owned / On Shelf -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
+                    <h2 class="text-lg font-bold text-white tracking-tight">Owned / On Shelf</h2>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-medium">{{ owned.count }}</span>
+                </div>
+            </div>
+
+            {% if owned %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {% for game in owned %}
+                <div class="group relative flex flex-col bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800/80 hover:border-zinc-700/80 rounded-2xl overflow-hidden transition-all duration-200">
+                    <a href="{% url 'boardgame_detail' game.pk %}" class="aspect-[4/3] bg-zinc-950 relative overflow-hidden flex items-center justify-center">
+                        {% if game.display_cover %}
+                        <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        {% else %}
+                        <div class="flex items-center justify-center w-full h-full text-zinc-700">
+                            <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        {% if game.bgg_rating %}
+                        <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-[10px] font-semibold text-amber-400">
+                            ★ {{ game.bgg_rating }}
+                        </div>
+                        {% endif %}
+                    </a>
+                    <div class="p-3 flex flex-col flex-1 justify-between">
+                        <div>
+                            <a href="{% url 'boardgame_detail' game.pk %}" class="text-sm font-bold text-zinc-100 hover:text-white line-clamp-1">{{ game.title }}</a>
+                            <div class="text-[11px] text-zinc-500 mt-0.5 line-clamp-1">
+                                {{ game.player_count_display }} · {{ game.playtime_display }}
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-zinc-800/60 flex items-center justify-between">
+                            <span class="text-[10px] text-zinc-400">{{ game.play_count }} plays</span>
+                            <form method="POST" action="{% url 'log_play' game.pk %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-[10px] px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold transition-colors">
+                                    +1 Play
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-8 rounded-2xl bg-zinc-950/40 border border-zinc-800/60 text-center">
+                <p class="text-xs text-zinc-500">Your shelf is empty. Search games you own on BGG to catalogue your physical collection.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Want to Play & Wishlist (Dual Columns) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Want to Play -->
+            <section class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                    <h2 class="text-lg font-bold text-white tracking-tight">Want to Play</h2>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-medium">{{ want_to_play.count }}</span>
+                </div>
+                <div class="space-y-2">
+                    {% for game in want_to_play %}
+                    <div class="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/80 flex items-center justify-between hover:bg-zinc-900 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-lg bg-zinc-950 border border-zinc-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                {% if game.display_cover %}
+                                <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover">
+                                {% else %}
+                                <svg class="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0">
+                                <a href="{% url 'boardgame_detail' game.pk %}" class="text-sm font-semibold text-zinc-200 hover:text-white truncate block">{{ game.title }}</a>
+                                <span class="text-[11px] text-zinc-500">{{ game.player_count_display }} · {{ game.playtime_display }}</span>
+                            </div>
+                        </div>
+                        <form method="POST" action="{% url 'log_play' game.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 font-medium transition-colors">
+                                Mark Played
+                            </button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <p class="text-xs text-zinc-600 italic py-2">No games marked Want to Play.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Wishlist -->
+            <section class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                    <h2 class="text-lg font-bold text-white tracking-tight">Wishlist</h2>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-medium">{{ wishlist.count }}</span>
+                </div>
+                <div class="space-y-2">
+                    {% for game in wishlist %}
+                    <div class="p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/80 flex items-center justify-between hover:bg-zinc-900 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-lg bg-zinc-950 border border-zinc-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                {% if game.display_cover %}
+                                <img src="{{ game.display_cover }}" alt="{{ game.title }}" class="w-full h-full object-cover">
+                                {% else %}
+                                <svg class="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0">
+                                <a href="{% url 'boardgame_detail' game.pk %}" class="text-sm font-semibold text-zinc-200 hover:text-white truncate block">{{ game.title }}</a>
+                                <span class="text-[11px] text-zinc-500">{{ game.player_count_display }}</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'boardgame_detail' game.pk %}" class="text-xs text-zinc-400 hover:text-zinc-200 font-medium">View</a>
+                    </div>
+                    {% empty %}
+                    <p class="text-xs text-zinc-600 italic py-2">No games in wishlist.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Search & Add Modal -->
+<div id="search-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 pt-16 sm:pt-24 overflow-y-auto">
+    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col">
+        <!-- Modal Header -->
+        <div class="p-4 border-b border-zinc-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <h3 class="text-sm font-bold text-white">Search BoardGameGeek</h3>
+            </div>
+            <button onclick="document.getElementById('search-modal').classList.add('hidden')" class="text-zinc-400 hover:text-white p-1 rounded-lg">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Search Input with HTMX -->
+        <div class="p-4 border-b border-zinc-800/80">
+            <input type="text"
+                   name="q"
+                   placeholder="Type game title (e.g. Terraforming Mars, Wingspan, Catan)..."
+                   class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-orange-500/60 transition-colors"
+                   hx-get="{% url 'search_boardgames' %}"
+                   hx-trigger="keyup changed delay:400ms"
+                   hx-target="#search-results"
+                   hx-indicator="#search-spinner">
+            <div id="search-spinner" class="htmx-indicator mt-2 text-xs text-orange-400 flex items-center gap-2">
+                <svg class="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                Searching BoardGameGeek XML API2...
+            </div>
+        </div>
+
+        <!-- Search Results List -->
+        <div id="search-results" class="max-h-96 overflow-y-auto divide-y divide-zinc-900/60 p-2">
+            <div class="p-8 text-center text-xs text-zinc-500">
+                Type above to query BoardGameGeek. Or use the manual creator below.
+            </div>
+        </div>
+
+        <!-- Modal Footer / Manual Fallback -->
+        <div class="p-4 bg-zinc-900/30 border-t border-zinc-800/80 flex items-center justify-between text-xs">
+            <span class="text-zinc-500">Unlisted tabletop game or custom print?</span>
+            <button onclick="document.getElementById('search-modal').classList.add('hidden'); document.getElementById('manual-modal').classList.remove('hidden')"
+                    class="text-orange-400 hover:text-orange-300 font-semibold underline">
+                Add Manually
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Entry Modal -->
+<div id="manual-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center p-4 pt-12 overflow-y-auto">
+    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden p-6">
+        <div class="flex items-center justify-between pb-4 border-b border-zinc-800">
+            <h3 class="text-base font-bold text-white">Add Custom Board Game</h3>
+            <button onclick="document.getElementById('manual-modal').classList.add('hidden')" class="text-zinc-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'add_boardgame' %}" enctype="multipart/form-data" class="space-y-4 mt-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Title *</label>
+                {{ form.title }}
+                {% if form.title.errors %}<p class="text-xs text-red-400 mt-1">{{ form.title.errors.0 }}</p>{% endif %}
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Status</label>
+                    {{ form.status }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Year Published</label>
+                    {{ form.year_published }}
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Min Players</label>
+                    {{ form.min_players }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Max Players</label>
+                    {{ form.max_players }}
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Min Playtime (min)</label>
+                    {{ form.min_playtime }}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Max Playtime (min)</label>
+                    {{ form.max_playtime }}
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Custom Box Artwork</label>
+                {{ form.custom_cover }}
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-zinc-400 mb-1">Notes / Description</label>
+                {{ form.notes }}
+            </div>
+
+            <div class="pt-4 border-t border-zinc-800 flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('manual-modal').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white rounded-lg">Cancel</button>
+                <button type="submit" class="px-5 py-2 text-xs font-bold bg-orange-500 hover:bg-orange-400 text-zinc-950 rounded-xl transition-all">Save Game</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

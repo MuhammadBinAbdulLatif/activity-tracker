@@ -96,11 +96,13 @@ Transition the dashboard from demo data to persisted user logs with dual entry p
 - Manual creation fallback.
 - 31/31 automated tests passing (102/102 across entire suite).
 
-### Step 5.6: Board Games & Tabletop
+### Step 5.6: Board Games & Tabletop [COMPLETED]
+- **Status:** Complete & Verified
 - Search BoardGameGeek (BGG) XML API2 by title.
 - Auto-fill: box artwork, recommended player counts, playing time, designers, mechanics, BGG ranking.
 - User inputs: play date, play count, session duration, players present / winner, user rating, thoughts.
 - Manual creation fallback.
+- 20/20 automated tests passing (144/144 across entire suite).
 
 ---
 
