@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpRequest, JsonResponse
+from django.contrib import messages
 from decimal import Decimal, InvalidOperation
 
 from .models import GameEntry, GameStatus
@@ -119,6 +120,7 @@ def add_game(request: HttpRequest):
 
         entry = GameEntry(user=request.user, **entry_data)
         entry.save()
+        messages.success(request, f"Added '{entry.title}' to your game chronicle.")
         return redirect("game_detail", pk=entry.pk)
 
     # Full manual form path
@@ -127,24 +129,13 @@ def add_game(request: HttpRequest):
         entry = form.save(commit=False)
         entry.user = request.user
         entry.save()
+        messages.success(request, f"Created custom game '{entry.title}'.")
         return redirect("game_detail", pk=entry.pk)
 
-    # Form errors — re-render list with form errors
-    entries = GameEntry.objects.filter(user=request.user)
-    context = {
-        "playing": entries.filter(status=GameStatus.PLAYING),
-        "backlog": entries.filter(status=GameStatus.BACKLOG),
-        "completed": entries.filter(status=GameStatus.COMPLETED),
-        "on_hold": entries.filter(status=GameStatus.ON_HOLD),
-        "dropped": entries.filter(status=GameStatus.DROPPED),
-        "total_tracked": entries.count(),
-        "total_hours": sum(e.hours_played for e in entries),
-        "currently_playing_count": entries.filter(status=GameStatus.PLAYING).count(),
-        "completed_count": entries.filter(status=GameStatus.COMPLETED).count(),
-        "form": form,
-        "statuses": GameStatus,
-    }
-    return render(request, "games/list.html", context)
+    # Form errors — show alert message and redirect cleanly (PRG pattern)
+    first_error = next(iter(form.errors.values()))[0] if form.errors else "Please check the form fields."
+    messages.error(request, f"Could not create game: {first_error}")
+    return redirect("game_list")
 
 
 # --------------------------------------------------------------------------- #
@@ -174,13 +165,11 @@ def update_game_details(request: HttpRequest, pk: int):
     form = GameEntryForm(request.POST, request.FILES, instance=entry)
     if form.is_valid():
         form.save()
+        messages.success(request, f"Updated details for '{entry.title}'.")
         return redirect("game_detail", pk=pk)
-    context = {
-        "entry": entry,
-        "form": form,
-        "statuses": GameStatus,
-    }
-    return render(request, "games/detail.html", context)
+    first_error = next(iter(form.errors.values()))[0] if form.errors else "Please check the form fields."
+    messages.error(request, f"Could not update game: {first_error}")
+    return redirect("game_detail", pk=pk)
 
 
 # --------------------------------------------------------------------------- #
@@ -191,7 +180,9 @@ def update_game_details(request: HttpRequest, pk: int):
 @require_POST
 def delete_game(request: HttpRequest, pk: int):
     entry = get_object_or_404(GameEntry, pk=pk, user=request.user)
+    title = entry.title
     entry.delete()
+    messages.success(request, f"Removed '{title}' from your chronicle.")
     return redirect("game_list")
 
 

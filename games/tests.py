@@ -326,7 +326,9 @@ class GameViewTests(TestCase):
             "hours_played": "0.0",
             "completion_percentage": "0",
         })
-        self.assertEqual(response.status_code, 200)
+        # Follows Post-Redirect-Get pattern with flash message to prevent browser resubmission prompts
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("game_list"))
         self.assertFalse(GameEntry.objects.filter(user=self.user, title="").exists())
 
     # --- Detail View ---
