@@ -22,10 +22,18 @@
                 <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20">
                     Session Log
                 </span>
-                <span class="text-xs text-zinc-500">• {{ exercise.get_target_muscle_group_display }}</span>
+                <span class="text-xs text-zinc-500">• {{ exercise.get_target_muscle_group_display }} ({{ exercise.get_equipment_display }})</span>
             </div>
             <h1 class="text-xl font-bold tracking-tight text-white">{{ exercise.name }}</h1>
-            <p class="text-xs text-zinc-400 mt-1">Record weight, repetitions, duration, or distance performed.</p>
+            <p class="text-xs text-zinc-400 mt-1">
+                {% if is_resistance and not is_cardio %}
+                    Record your completed sets, reps, and weight lifted.
+                {% elif is_cardio and not is_resistance %}
+                    Record duration, distance covered, and estimated calories burned.
+                {% else %}
+                    Record duration or resistance parameters for this functional exercise.
+                {% endif %}
+            </p>
         </div>
 
         <form method="post" action="{% url 'exercise_log_create' exercise.slug %}" class="space-y-4">
@@ -39,8 +47,12 @@
                 {% endif %}
             </div>
 
+            <!-- Resistance Section: Displayed ONLY for Lifting / Weights / Calisthenics / Machines -->
+            {% if is_resistance or not is_cardio %}
             <div class="pt-2 border-t border-zinc-800/80">
-                <div class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">Resistance & Volume (Optional)</div>
+                <div class="text-[11px] font-semibold text-teal-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span>🏋️ Resistance & Strength Metrics</span>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-zinc-400 mb-1">Sets</label>
@@ -56,9 +68,14 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
+            <!-- Cardio Section: Displayed ONLY for Cardio & Aerobic Exercises -->
+            {% if is_cardio %}
             <div class="pt-2 border-t border-zinc-800/80">
-                <div class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">Cardio & Endurance (Optional)</div>
+                <div class="text-[11px] font-semibold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span>🏃 Cardio & Aerobic Metrics</span>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-zinc-400 mb-1">Duration (min)</label>
@@ -74,15 +91,16 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <div class="pt-2 border-t border-zinc-800/80">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-zinc-300 mb-1">Rate of Perceived Exertion (1–10)</label>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Intensity / RPE (1–10)</label>
                         {{ form.rpe }}
                     </div>
                     <div class="sm:col-span-2">
-                        <label class="block text-xs font-medium text-zinc-300 mb-1">Personal Notes & Reflections</label>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Notes & Form Feedback</label>
                         {{ form.notes }}
                     </div>
                 </div>

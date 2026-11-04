@@ -39,6 +39,12 @@ class EquipmentType(models.TextChoices):
     OTHER = "OTHER", "Other / None"
 
 
+class ExerciseTrackingStatus(models.TextChoices):
+    IN_PROGRESS = "IN_PROGRESS", "Active / In Routine"
+    PLANNED = "PLANNED", "Planned / Want to Try"
+    COMPLETED = "COMPLETED", "Mastered / Completed Target"
+
+
 class Exercise(models.Model):
     name = models.CharField(max_length=150, unique=True)
     slug = models.SlugField(max_length=160, unique=True, blank=True)
@@ -100,15 +106,43 @@ class Exercise(models.Model):
         return self.name
 
     @property
-    def badge_color(self):
-        mapping = {
-            ExerciseCategory.STRENGTH: "teal",
-            ExerciseCategory.BODYWEIGHT: "emerald",
-            ExerciseCategory.CARDIO: "cyan",
-            ExerciseCategory.OLYMPIC: "amber",
-            ExerciseCategory.MOBILITY: "violet",
-        }
-        return mapping.get(self.category, "zinc")
+    def is_cardio_type(self):
+        return self.category == ExerciseCategory.CARDIO or self.target_muscle_group == MuscleGroup.CARDIO or self.equipment == EquipmentType.CARDIO_MACHINE
+
+    @property
+    def is_resistance_type(self):
+        return self.category in [ExerciseCategory.STRENGTH, ExerciseCategory.BODYWEIGHT, ExerciseCategory.OLYMPIC] or self.equipment in [EquipmentType.BARBELL, EquipmentType.DUMBBELL, EquipmentType.CABLE, EquipmentType.MACHINE, EquipmentType.KETTLEBELL]
+
+
+class UserExerciseTrack(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="exercise_tracks")
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name="user_tracks")
+    status = models.CharField(
+        max_length=20,
+        choices=ExerciseTrackingStatus.choices,
+        default=ExerciseTrackingStatus.IN_PROGRESS,
+        db_index=True,
+    )
+    personal_goal = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="e.g., Reach 100kg Bench, Run 5km under 25m, or Master 15 clean reps",
+    )
+    frequency_per_week = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Target frequency per week")
+    rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    personal_notes = models.TextField(blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        unique_together = ("user", "exercise")
+        verbose_name = "User Exercise Track"
+        verbose_name_plural = "User Exercise Tracks"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.exercise.name} [{self.get_status_display()}]"
 
 
 class ExerciseLog(models.Model):
@@ -116,12 +150,12 @@ class ExerciseLog(models.Model):
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name="logs")
     logged_date = models.DateField()
     
-    # Resistance / Strength Metrics
+    # Resistance / Strength Metrics (Shown only for lifting/bodyweight/machines)
     sets = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Number of completed sets")
     reps = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Reps per set or total reps")
     weight_kg = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Weight lifted in kg")
 
-    # Cardio / Endurance Metrics
+    # Cardio / Endurance Metrics (Shown only for cardio/aerobic exercises)
     duration_minutes = models.PositiveIntegerField(null=True, blank=True, help_text="Session duration in minutes")
     distance_km = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Distance covered in km")
     calories_burned = models.PositiveIntegerField(null=True, blank=True, help_text="Estimated calories burned")

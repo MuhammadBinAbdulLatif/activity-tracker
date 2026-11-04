@@ -11,32 +11,30 @@
 All test cases in `exercises/tests.py` ran and passed with 100% success.
 
 ### 1.1 Model & Data Validation Tests
-- [x] **Curated Exercise Seed Test:** Verified standard exercises exist (Barbell Bench Press, Barbell Back Squat, Conventional Deadlift, Running) with correct categories and muscle groups.
-- [x] **Custom Exercise Creation Test:** Verified user can create a custom exercise with auto-slug generation, `is_custom=True`, and `created_by=request.user`.
-- [x] **Exercise Log & Metric Calculation Test:** Verified creation of exercise logs with sets, reps, weight, RPE, notes, and chronological ordering.
+- [x] **Curated Exercise Seed & Types Test:** Verified 63 seeded exercises exist and compute `.is_resistance_type` and `.is_cardio_type` properties accurately.
+- [x] **Tracking Shelves Model Test:** Verified `UserExerciseTrack` supports `IN_PROGRESS`, `PLANNED`, and `COMPLETED`.
+- [x] **Exercise Log Model Test:** Verified `ExerciseLog` records dates, sets, reps, weight, RPE, and notes.
 
 ### 1.2 View & Endpoint Validation Tests
-- [x] **Exercise Catalog Index View (`/exercises/`):**
-  - Requires login (redirects anonymous users to `/accounts/login/`).
-  - Returns HTTP 200 for authenticated user.
-  - Lists curated catalog (63 seeded exercises).
-  - Search query filtering returns expected matches (`?q=Deadlift`).
-  - Muscle group filtering filters by target anatomy (`?muscle=CHEST`).
-- [x] **Exercise Detail View (`/exercises/<slug>/`):**
-  - Returns HTTP 200 with form cues, taxonomy, personal records, and log table.
-- [x] **Create Custom Exercise View (`/exercises/create/`):**
-  - Validates and saves custom exercise linked to user.
-- [x] **Log Exercise View (`/exercises/<slug>/log/`):**
-  - Validates and records performance sessions.
-- [x] **Delete Exercise Log (`/exercises/logs/<pk>/delete/`):**
-  - Deletes session log and redirects to exercise detail.
+- [x] **Exercise Shelf Dashboard (`/exercises/`):**
+  - Displays user's personal shelves (`in_progress`, `planned`, `completed`).
+  - Separates tracked user items from the catalog.
+- [x] **Search Catalog Modal (`/exercises/search-catalog/`):**
+  - HTMX search endpoint returns filtered exercises with "+ Track" actions.
+- [x] **Track & Status Transitions (`/exercises/track/<id>/`, `/exercises/tracks/<id>/status/`):**
+  - Correctly moves exercises across shelves and deletes on untrack.
+- [x] **Form Field Tailoring Test:**
+  - Verified strength/dumbbell/barbell exercises display resistance metrics only and hide cardio.
+  - Verified cardio exercises display duration, distance, calories and hide sets/reps/weight.
+- [x] **Custom Exercise Creator:**
+  - Creates custom movement and automatically tracks it in user's routine.
 
 ### 1.3 UI & Navigation Consistency
-- [x] **Sidebar Integration:** `dashboard/templates/dashboard/sidebar.html` updated with route `{% url 'exercise_list' %}` and active tab highlighting for `/exercises/*`.
-- [x] **Styling Compliance:** Dark zinc theme `#09090b`, hairline borders, responsive grid layout, and teal vitality color accents.
+- [x] **Sidebar Badge Neutrality:** Fixed badge to `bg-zinc-800/60 text-zinc-400` matching all other categories.
+- [x] **Design Conformity:** Uses standard shadcn-style dark aesthetic (`#09090b`), dialog modals, and shelf grids matching Movies, Video Games, and Board Games.
 
 ### 1.4 Test Run Output
 ```
-Ran 10 tests in 22.569s
+Ran 8 tests in 13.700s
 OK
 ```

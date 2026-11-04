@@ -6,50 +6,26 @@
 
 ---
 
-## 1. Feature Overview & Architecture
+## 1. Feature Architecture & Consistency Refactor
 
-Exercises & Habits provides physical activity logging and life progression to complement media tracking.
-The user requested:
-> *"start by creating all the most popular exercises. The more the exercises that you enter, the better the end result and user satisfaction will be. Make sure that it is up to standards, tested, validated, good and consistent ui"*
-
-### 1.1 Architectural Decisions
-1. **Dedicated Django App (`exercises`):**
-   - Registered in `INSTALLED_APPS` in `utrack/settings.py`.
-   - Dedicated `models.py`, `forms.py`, `views.py`, `urls.py`, `tests.py`.
-   - Seeded curated exercise catalog / library + user custom exercises.
-2. **Data Model Strategy:**
-   - **`Exercise` (Catalog / Library):**
-     - Canonical exercises (chest, back, legs, shoulders, arms, core, cardio, flexibility/mobility, bodyweight/calisthenics, olympic lifting).
-     - Fields: `name`, `slug`, `category` (Strength, Cardio, Bodyweight, Mobility, etc.), `target_muscle_group` (Chest, Back, Quads, Hamstrings, Shoulders, Biceps, Triceps, Core, Full Body, Cardiovascular), `secondary_muscles`, `equipment_needed` (Barbell, Dumbbell, Machine, Cable, Bodyweight, Kettlebell, Resistance Band, None), `instructions`, `is_custom`, `created_by` (null for global catalog).
-   - **`ExerciseLog` (Tracking & Progression):**
-     - User logs workout sessions and exercise performances.
-     - Key metrics: date, duration, sets, reps, weight (kg), distance (km), calories, difficulty/RPE, personal notes.
-3. **Comprehensive Seed Catalog:**
-   - Rich, curated catalog of **63 popular exercises** spanning all major muscle groups and modalities (Compound lifts, Isolation, Bodyweight/Calisthenics, Cardio & Endurance, Mobility & Core).
-   - Automatic seeding via Django data migration `0002_seed_popular_exercises.py` so it's populated out of the box.
-4. **UI Design & Aesthetic:**
-   - Follows `specs/styles.md`: dark zinc/slate surfaces (`#09090b`, `#18181b`), hairline borders (`border-zinc-800`), teal/emerald accents (`#14b8a6` / `#10b981`), HTMX live filter/search, modal/drawer exercise selector, and workout logging.
-   - Interactive exercise catalog explorer with category pills, muscle group filtering, and equipment filters.
-   - Integrated with sidebar navigation (`dashboard/templates/dashboard/sidebar.html`).
+### User Feedback Addressed:
+1. **Neutral Sidebar Badge:** Removed the green color accent from the sidebar badge for "Exercises & Habits" so that it matches the uniform monochromatic dark badge (`bg-zinc-800/60 text-zinc-400`) used across all other media categories.
+2. **Clear Shelf Boundaries (Personal Routine vs Catalog):** Rather than overwhelming the user's primary view with all 63+ exercises, the dashboard is now organized into user shelves matching the standard uTrack UX (Movies, Video Games, Board Games):
+   - **Active In Routine (`IN_PROGRESS`)**
+   - **Want to Try / Planned (`PLANNED`)**
+   - **Mastered / Milestones (`COMPLETED`)**
+3. **Modal Picker Dialog:** A top "Add Exercise" button triggers a modal dialog where users search and filter the catalog of 63+ exercises and choose which ones to track in their routine, with a fallback for creating custom exercises.
+4. **Context-Aware Form Field Tailoring:**
+   - Strength / Dumbbells / Barbells / Machines display **only** relevant resistance metrics (`sets`, `reps`, `weight_kg`). Cardio metrics are omitted.
+   - Cardio & Aerobic exercises (Running, Cycling, Rowing, etc.) display **only** endurance metrics (`duration_minutes`, `distance_km`, `calories_burned`).
+   - Clean intensity (RPE) and form notes on both.
 
 ---
 
-## 2. Completed Implementation Deliverables
-
-1. **Specs Phase:** Created `plan.md`, `requirements.md`, and `validation.md` under `specs/exercises_and_habits/`.
-2. **App Creation & Configuration:**
-   - Added `'exercises'` to `INSTALLED_APPS` in `utrack/settings.py`.
-   - Included `path('exercises/', include('exercises.urls'))` in `utrack/urls.py`.
-3. **Data Models & Migrations:**
-   - Defined `ExerciseCategory`, `MuscleGroup`, `EquipmentType`, `Exercise`, and `ExerciseLog`.
-   - Initial migration `0001_initial.py` and data migration `0002_seed_popular_exercises.py` applied.
-   - 63 popular exercises seeded across Chest, Back, Legs, Shoulders, Arms, Core, Cardio, Olympic lifting, and Functional mobility.
-4. **Forms & Views:**
-   - `ExerciseForm` for custom movements.
-   - `ExerciseLogForm` for logging sets, reps, weights, duration, distance, RPE, and notes.
-   - Views for listing/filtering with HTMX live search, detail view with PR analytics, custom creation, and log deletion.
-5. **Templates & UI:**
-   - `exercises/list.html`, `exercises/partials/exercise_grid.html`, `exercises/detail.html`, `exercises/log_form.html`, `exercises/create.html`.
-   - Updated `dashboard/templates/dashboard/sidebar.html` with active route detection.
-6. **Testing & Quality Assurance:**
-   - 10 automated test cases in `exercises/tests.py` passing with 100% success.
+## 2. Deliverables Completed
+- Models: `Exercise`, `UserExerciseTrack`, `ExerciseLog`.
+- Migrations: `0001_initial`, `0002_seed_popular_exercises` (63 exercises), `0003_userexercisetrack`.
+- Views: Shelf dashboard, modal catalog search with HTMX, track/untrack endpoints, tailored session logger.
+- Templates: Standardized `list.html`, `detail.html`, `log_form.html`, `catalog_search_results.html`.
+- Sidebar: Standardized neutral badge in `sidebar.html`.
+- Tests: 8 automated tests passing (100% OK).
