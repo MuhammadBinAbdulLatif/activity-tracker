@@ -109,14 +109,14 @@
                 </a>
 
                 <!-- Exercises & Life Habits -->
-                <a href="#exercises" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60 transition-colors group">
+                <a href="{% url 'exercise_list' %}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60 transition-colors group {% if request.path|slice:':11' == '/exercises/' %}bg-zinc-900/60 text-zinc-100{% endif %}">
                     <div class="flex items-center gap-3">
                         <svg class="w-4 h-4 text-zinc-500 group-hover:text-teal-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                         <span>Exercises & Habits</span>
                     </div>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-400 border border-teal-500/20">3/4</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-400 border border-teal-500/20">Track</span>
                 </a>
             </div>
         </div>

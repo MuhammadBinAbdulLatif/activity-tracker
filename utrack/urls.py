@@ -13,6 +13,7 @@ urlpatterns = [
     path('comics/', include('comics.urls')),
     path('games/', include('games.urls')),
     path('boardgames/', include('boardgames.urls')),
+    path('exercises/', include('exercises.urls')),
     path('', include('dashboard.urls')),
 ]
 
