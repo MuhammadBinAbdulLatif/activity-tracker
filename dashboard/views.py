@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .demo_data import get_demo_dashboard_data
+from .services import get_real_dashboard_data
 
 @login_required
 def home_dashboard_view(request):
     """
-    Renders the primary uTrack home dashboard with active pursuits,
-    heatmap timeline, planned items, and retrospective highlights.
+    Renders the live uTrack home dashboard with real user data aggregated
+    from Movies, Series, Books, Audiobooks, Comics, Games, Boardgames, and Exercises.
     """
-    context = get_demo_dashboard_data(username=request.user.username)
+    context = get_real_dashboard_data(user=request.user)
     return render(request, "dashboard/home.html", context)
