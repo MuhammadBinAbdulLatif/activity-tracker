@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.utils import timezone
 from .models import MovieEntry, MovieStatus
 from services.tmdb import tmdb_service
+from services.recommendation_engine import recommendation_engine
 
 @login_required
 def movie_list_view(request):
@@ -170,9 +171,15 @@ def movie_detail_view(request, movie_id):
                 movie.backdrop_path = details.get("backdrop_path", "")
             movie.save()
 
+    # Fetch contextual recommendations
+    recommendations = []
+    if movie.tmdb_id:
+        recommendations = recommendation_engine.get_movie_recommendations(movie.tmdb_id, user=request.user, limit=6)
+
     context = {
         "movie": movie,
         "status_choices": MovieStatus.choices,
+        "recommendations": recommendations,
     }
     return render(request, "movies/detail.html", context)
 

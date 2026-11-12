@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.utils import timezone
 from .models import BookEntry, BookStatus, BookFormat
 from services.openlibrary import openlibrary_service
+from services.recommendation_engine import recommendation_engine
 
 @login_required
 def book_list_view(request):
@@ -194,10 +195,20 @@ def book_detail_view(request, book_id):
                 book.genres = details.get("genres")
             book.save()
 
+    # Fetch contextual recommendations
+    recommendations = recommendation_engine.get_book_recommendations(
+        author=book.author,
+        subject=book.genres,
+        current_title=book.title,
+        user=request.user,
+        limit=6,
+    )
+
     context = {
         "book": book,
         "status_choices": BookStatus.choices,
         "format_choices": BookFormat.choices,
+        "recommendations": recommendations,
     }
     return render(request, "books/detail.html", context)
 

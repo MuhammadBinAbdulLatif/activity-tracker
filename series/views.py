@@ -6,6 +6,7 @@ from django.utils import timezone
 from .models import SeriesEntry, SeasonEntry, SeriesUserStatus, SeriesShowStatus
 from .engine import SeriesProgressionEngine
 from services.tmdb import tmdb_service
+from services.recommendation_engine import recommendation_engine
 
 @login_required
 def series_list_view(request):
@@ -209,11 +210,17 @@ def series_detail_view(request, series_id):
     else:
         progress_pct = 100 if entry.user_status == SeriesUserStatus.COMPLETED else 0
 
+    # Fetch contextual recommendations
+    recommendations = []
+    if entry.tmdb_id:
+        recommendations = recommendation_engine.get_series_recommendations(entry.tmdb_id, user=request.user, limit=6)
+
     context = {
         "series": entry,
         "seasons": seasons,
         "progress_pct": progress_pct,
         "status_choices": SeriesUserStatus.choices,
+        "recommendations": recommendations,
     }
     return render(request, "series/detail.html", context)
 

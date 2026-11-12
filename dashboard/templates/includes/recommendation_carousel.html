@@ -1,0 +1,89 @@
+{% if recommendations %}
+<div class="mt-12 pt-8 border-t border-zinc-800/80 space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </span>
+                <h3 class="text-lg font-bold text-white tracking-tight">You Might Also Enjoy</h3>
+            </div>
+            <p class="text-xs text-zinc-400 mt-1">Recommended next titles based on this entry and your personal chronicle.</p>
+        </div>
+        <span class="text-xs font-mono text-zinc-500 uppercase tracking-wider">{{ recommendations|length }} suggested</span>
+    </div>
+
+    <!-- Recommendations Carousel Rack -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {% for item in recommendations %}
+        <div class="group relative flex flex-col rounded-2xl bg-zinc-950/80 border border-zinc-800/80 hover:border-zinc-700 transition-all overflow-hidden p-2.5">
+            <!-- Cover Poster -->
+            <div class="relative w-full aspect-[2/3] rounded-xl bg-zinc-900 border border-zinc-800/60 overflow-hidden mb-2.5">
+                {% if item.poster_url %}
+                <img src="{{ item.poster_url }}" alt="{{ item.title }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                {% else %}
+                <div class="w-full h-full flex flex-col items-center justify-center p-3 text-center text-zinc-600">
+                    <svg class="w-8 h-8 mb-1.5 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                    </svg>
+                    <span class="text-[10px] uppercase font-mono tracking-wider">No Poster</span>
+                </div>
+                {% endif %}
+
+                {% if item.rating %}
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-zinc-950/90 backdrop-blur border border-amber-500/30 text-[10px] font-bold text-amber-400 flex items-center gap-1 shadow-md">
+                    <span>★</span>
+                    <span>{{ item.rating }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Meta & Title -->
+            <div class="flex-1 flex flex-col justify-between space-y-1">
+                <div>
+                    <h4 class="text-xs font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors line-clamp-2 leading-snug" title="{{ item.title }}">
+                        {{ item.title }}
+                    </h4>
+                    <p class="text-[11px] text-zinc-400 truncate mt-0.5 font-mono">
+                        {{ item.subtitle }}
+                    </p>
+                </div>
+
+                <!-- Quick Add Form / Link -->
+                <div class="pt-2">
+                    {% if item.category == 'movie' %}
+                    <form action="{% url 'movie_add' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tmdb_id" value="{{ item.external_id }}">
+                        <input type="hidden" name="title" value="{{ item.title }}">
+                        <input type="hidden" name="poster_path" value="{{ item.poster_url }}">
+                        <input type="hidden" name="release_date" value="{{ item.year }}-01-01">
+                        <input type="hidden" name="status" value="PLAN_TO_WATCH">
+                        <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-emerald-500 hover:text-zinc-950 text-zinc-300 border border-zinc-800 text-[11px] font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer">
+                            <span>+ Watchlist</span>
+                        </button>
+                    </form>
+                    {% elif item.category == 'series' %}
+                    <form action="{% url 'series_add' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tmdb_id" value="{{ item.external_id }}">
+                        <input type="hidden" name="title" value="{{ item.title }}">
+                        <input type="hidden" name="poster_path" value="{{ item.poster_url }}">
+                        <input type="hidden" name="first_air_date" value="{{ item.year }}-01-01">
+                        <input type="hidden" name="status" value="PLAN_TO_WATCH">
+                        <button type="submit" class="w-full py-1.5 px-2 rounded-lg bg-zinc-900 hover:bg-emerald-500 hover:text-zinc-950 text-zinc-300 border border-zinc-800 text-[11px] font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer">
+                            <span>+ Watchlist</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <span class="inline-block w-full py-1 text-center text-[10px] text-zinc-500 font-mono">Suggested</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

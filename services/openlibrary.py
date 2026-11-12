@@ -114,4 +114,35 @@ class OpenLibraryService:
             logger.error(f"Error fetching work details for {work_key}: {e}")
             return None
 
+    def get_recommendations_for_book(self, author=None, subject=None, current_title=None, limit=6):
+        """
+        Discovers related books by author or primary subject, excluding the current book.
+        """
+        results = []
+        if author and author != "Unknown Author":
+            # Search other books by this author
+            author_search = self.search_books(f'author:"{author}"', limit=limit + 2)
+            results.extend(author_search.get("results", []))
+        
+        if len(results) < limit and subject:
+            first_subject = [s.strip() for s in subject.split(",") if s.strip()][0] if isinstance(subject, str) else None
+            if first_subject:
+                subject_search = self.search_books(f'subject:"{first_subject}"', limit=limit + 2)
+                results.extend(subject_search.get("results", []))
+
+        # Filter out current title and remove duplicates
+        seen = set()
+        cleaned = []
+        for b in results:
+            t = b.get("title", "").strip().lower()
+            if not t or (current_title and t == current_title.strip().lower()):
+                continue
+            if t in seen:
+                continue
+            seen.add(t)
+            cleaned.append(b)
+            if len(cleaned) >= limit:
+                break
+        return cleaned
+
 openlibrary_service = OpenLibraryService()

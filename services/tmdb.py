@@ -80,6 +80,20 @@ class TMDBService:
         data = self._request(f"movie/{tmdb_id}", params=params, cache_ttl=86400)
         return data
 
+    def get_movie_recommendations(self, tmdb_id, page=1):
+        """
+        Retrieves recommended movies for a given movie tmdb_id.
+        Falls back to 'similar' if the recommendation list is empty.
+        """
+        if not tmdb_id:
+            return []
+        data = self._request(f"movie/{tmdb_id}/recommendations", params={"page": page}, cache_ttl=86400)
+        results = data.get("results", []) if data else []
+        if not results:
+            data_similar = self._request(f"movie/{tmdb_id}/similar", params={"page": page}, cache_ttl=86400)
+            results = data_similar.get("results", []) if data_similar else []
+        return results
+
     # --------------------------------------------------------------------------
     # TV Series Endpoints
     # --------------------------------------------------------------------------
@@ -96,6 +110,20 @@ class TMDBService:
         params = {"append_to_response": "credits"}
         data = self._request(f"tv/{tmdb_id}", params=params, cache_ttl=86400)
         return data
+
+    def get_series_recommendations(self, tmdb_id, page=1):
+        """
+        Retrieves recommended TV series for a given tv tmdb_id.
+        Falls back to 'similar' if the recommendation list is empty.
+        """
+        if not tmdb_id:
+            return []
+        data = self._request(f"tv/{tmdb_id}/recommendations", params={"page": page}, cache_ttl=86400)
+        results = data.get("results", []) if data else []
+        if not results:
+            data_similar = self._request(f"tv/{tmdb_id}/similar", params={"page": page}, cache_ttl=86400)
+            results = data_similar.get("results", []) if data_similar else []
+        return results
 
     def get_season_details(self, tmdb_id, season_number):
         data = self._request(f"tv/{tmdb_id}/season/{season_number}", cache_ttl=86400)
